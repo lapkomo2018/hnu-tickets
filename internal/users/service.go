@@ -56,7 +56,8 @@ func (s *Service) Update(ctx context.Context, actor appmiddleware.Principal, id 
 	}
 	if input.Email != nil {
 		email := strings.ToLower(strings.TrimSpace(*input.Email))
-		if _, err := mail.ParseAddress(email); err != nil {
+		address, err := mail.ParseAddress(email)
+		if err != nil || address.Address != email {
 			return nil, apperror.New(apperror.KindValidation, "INVALID_EMAIL", "email address is invalid")
 		}
 		user.Email = email

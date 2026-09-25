@@ -2,6 +2,7 @@ package auth
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"net/mail"
 	"strings"
@@ -56,8 +57,15 @@ func (s *Service) Register(ctx context.Context, input RegisterInput) (*Session, 
 
 func (s *Service) Login(ctx context.Context, input LoginInput) (*Session, error) {
 	user, err := s.users.GetByEmail(ctx, strings.TrimSpace(input.Email))
-	if err != nil || checkPassword(user.PasswordHash, input.Password) != nil {
-		return nil, apperror.New(apperror.KindUnauthorized, "INVALID_CREDENTIALS", "email or password is incorrect")
+	if err != nil {
+		var appErr *apperror.Error
+		if errors.As(err, &appErr) && appErr.Kind == apperror.KindNotFound {
+			return nil, invalidCredentials()
+		}
+		return nil, err
+	}
+	if checkPassword(user.PasswordHash, input.Password) != nil {
+		return nil, invalidCredentials()
 	}
 	return s.sessionFor(user)
 }
@@ -80,11 +88,16 @@ func validateCredentials(name, email, password string) (string, string, error) {
 		return "", "", apperror.New(apperror.KindValidation, "INVALID_NAME", "name must contain 2 to 100 characters")
 	}
 	email = strings.ToLower(strings.TrimSpace(email))
-	if _, err := mail.ParseAddress(email); err != nil {
+	address, err := mail.ParseAddress(email)
+	if err != nil || address.Address != email {
 		return "", "", apperror.New(apperror.KindValidation, "INVALID_EMAIL", "email address is invalid")
 	}
 	if utf8.RuneCountInString(password) < 8 {
 		return "", "", apperror.New(apperror.KindValidation, "INVALID_PASSWORD", "password must contain at least 8 characters")
 	}
 	return name, email, nil
+}
+
+func invalidCredentials() error {
+	return apperror.New(apperror.KindUnauthorized, "INVALID_CREDENTIALS", "email or password is incorrect")
 }

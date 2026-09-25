@@ -24,7 +24,7 @@ func (r *PostgresRepository) Overview(ctx context.Context, period Period) (Overv
 	err := database.Executor(ctx, r.pool).QueryRow(ctx, `
 		SELECT
 			COUNT(*),
-			COUNT(*) FILTER (WHERE status NOT IN ('CLOSED', 'CANCELLED')),
+			COUNT(*) FILTER (WHERE status NOT IN ('RESOLVED', 'CLOSED', 'CANCELLED')),
 			COUNT(*) FILTER (WHERE status = 'IN_PROGRESS'),
 			COUNT(*) FILTER (WHERE status = 'RESOLVED'),
 			COUNT(*) FILTER (WHERE status = 'CLOSED'),
