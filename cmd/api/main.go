@@ -134,10 +134,10 @@ func newRouter(pool *pgxpool.Pool, cfg config.Config) http.Handler {
 		httpx.JSON(w, http.StatusOK, map[string]string{"status": "ready"})
 	})
 	router.Get("/openapi.yaml", swagger.OpenAPI)
-	router.Get("/swagger", func(w http.ResponseWriter, r *http.Request) {
-		http.Redirect(w, r, "/swagger/", http.StatusPermanentRedirect)
+	router.Get("/docs", func(w http.ResponseWriter, r *http.Request) {
+		http.Redirect(w, r, "/docs/", http.StatusPermanentRedirect)
 	})
-	router.Get("/swagger/", swagger.UI)
+	router.Get("/docs/", swagger.UI)
 
 	router.Route("/api/v1", func(api chi.Router) {
 		api.Route("/auth", func(authRouter chi.Router) {

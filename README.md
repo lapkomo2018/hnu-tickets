@@ -34,7 +34,7 @@ The API is available at `http://localhost:8080`. Useful endpoints:
 
 - Health: `GET /health`
 - Readiness: `GET /ready`
-- Swagger UI: `GET /swagger/`
+- Swagger UI: `GET /docs/`
 - OpenAPI: `GET /openapi.yaml`
 
 Load demo data after the services start:
@@ -104,4 +104,4 @@ go build ./...
 
 All application endpoints use the `/api/v1` prefix. Send an access token as `Authorization: Bearer <token>`. Dates use RFC3339 and IDs use UUID.
 
-See [docs/api.md](docs/api.md) for permissions and examples, or open the Swagger UI at `/swagger/`.
+See [docs/api.md](docs/api.md) for permissions and examples, or open the Swagger UI at `/docs/`.
