@@ -7,21 +7,21 @@ import (
 )
 
 type Response struct {
-	ID        uuid.UUID `json:"id"`
+	ID        uuid.UUID `json:"id" format:"uuid"`
 	Name      string    `json:"name"`
-	Email     string    `json:"email"`
+	Email     string    `json:"email" format:"email"`
 	Role      Role      `json:"role"`
-	CreatedAt time.Time `json:"createdAt"`
-	UpdatedAt time.Time `json:"updatedAt"`
+	CreatedAt time.Time `json:"createdAt" format:"date-time"`
+	UpdatedAt time.Time `json:"updatedAt" format:"date-time"`
 }
 
 type UpdateRequest struct {
-	Name  *string `json:"name"`
-	Email *string `json:"email"`
+	Name  *string `json:"name" minLength:"2" maxLength:"100"`
+	Email *string `json:"email" format:"email"`
 }
 
 type UpdateRoleRequest struct {
-	Role Role `json:"role"`
+	Role Role `json:"role" validate:"required"`
 }
 
 func ToResponse(user User) Response {

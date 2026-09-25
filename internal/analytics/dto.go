@@ -17,13 +17,13 @@ type Count struct {
 }
 
 type CategoryCount struct {
-	ID    uuid.UUID `json:"id"`
+	ID    uuid.UUID `json:"id" format:"uuid"`
 	Name  string    `json:"name"`
 	Count int64     `json:"count"`
 }
 
 type SpecialistWorkload struct {
-	ID          uuid.UUID `json:"id"`
+	ID          uuid.UUID `json:"id" format:"uuid"`
 	Name        string    `json:"name"`
 	OpenTickets int64     `json:"openTickets"`
 }

@@ -7,29 +7,29 @@ import (
 )
 
 type CreateRequest struct {
-	Title       string    `json:"title"`
-	Description string    `json:"description"`
-	CategoryID  uuid.UUID `json:"categoryId"`
-	Priority    Priority  `json:"priority"`
+	Title       string    `json:"title" validate:"required" minLength:"3" maxLength:"255" example:"Printer is not working"`
+	Description string    `json:"description" validate:"required" minLength:"1" example:"Nothing prints after the driver update"`
+	CategoryID  uuid.UUID `json:"categoryId" validate:"required" format:"uuid"`
+	Priority    Priority  `json:"priority" validate:"required"`
 }
 
 type UpdateRequest struct {
-	Title       *string    `json:"title"`
-	Description *string    `json:"description"`
-	CategoryID  *uuid.UUID `json:"categoryId"`
+	Title       *string    `json:"title" minLength:"3" maxLength:"255"`
+	Description *string    `json:"description" minLength:"1"`
+	CategoryID  *uuid.UUID `json:"categoryId" format:"uuid"`
 	Priority    *Priority  `json:"priority"`
 }
 
 type AssignRequest struct {
-	SpecialistID uuid.UUID `json:"specialistId"`
+	SpecialistID uuid.UUID `json:"specialistId" validate:"required" format:"uuid"`
 }
 
 type StatusRequest struct {
-	Status Status `json:"status"`
+	Status Status `json:"status" validate:"required"`
 }
 
 type Response struct {
-	ID          uuid.UUID       `json:"id"`
+	ID          uuid.UUID       `json:"id" format:"uuid"`
 	Title       string          `json:"title"`
 	Description string          `json:"description"`
 	Status      Status          `json:"status"`
@@ -37,10 +37,10 @@ type Response struct {
 	Category    CategorySummary `json:"category"`
 	CreatedBy   UserSummary     `json:"createdBy"`
 	AssignedTo  *UserSummary    `json:"assignedTo"`
-	CreatedAt   time.Time       `json:"createdAt"`
-	UpdatedAt   time.Time       `json:"updatedAt"`
-	ResolvedAt  *time.Time      `json:"resolvedAt"`
-	ClosedAt    *time.Time      `json:"closedAt"`
+	CreatedAt   time.Time       `json:"createdAt" format:"date-time"`
+	UpdatedAt   time.Time       `json:"updatedAt" format:"date-time"`
+	ResolvedAt  *time.Time      `json:"resolvedAt" format:"date-time"`
+	ClosedAt    *time.Time      `json:"closedAt" format:"date-time"`
 }
 
 type PageResponse struct {

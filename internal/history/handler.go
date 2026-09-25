@@ -15,19 +15,27 @@ type Handler struct {
 }
 
 type Response struct {
-	ID        uuid.UUID `json:"id"`
-	TicketID  uuid.UUID `json:"ticketId"`
-	ChangedBy uuid.UUID `json:"changedBy"`
+	ID        uuid.UUID `json:"id" format:"uuid"`
+	TicketID  uuid.UUID `json:"ticketId" format:"uuid"`
+	ChangedBy uuid.UUID `json:"changedBy" format:"uuid"`
 	Action    string    `json:"action"`
 	OldValue  *string   `json:"oldValue"`
 	NewValue  *string   `json:"newValue"`
-	CreatedAt time.Time `json:"createdAt"`
+	CreatedAt time.Time `json:"createdAt" format:"date-time"`
 }
 
 func NewHandler(service *Service) *Handler {
 	return &Handler{service: service}
 }
 
+// @Summary List immutable ticket history
+// @Tags History
+// @Produce json
+// @Security BearerAuth
+// @Param id path string true "Ticket identifier" format(uuid)
+// @Success 200 {array} history.Response
+// @Failure 400,401,403,404 {object} httpx.ErrorEnvelope
+// @Router /tickets/{id}/history [get]
 func (h *Handler) List(w http.ResponseWriter, r *http.Request) error {
 	ticketID, err := httpx.UUIDParam(r, "id")
 	if err != nil {

@@ -15,6 +15,14 @@ func NewHandler(service *Service) *Handler {
 	return &Handler{service: service}
 }
 
+// @Summary List ticket comments
+// @Tags Comments
+// @Produce json
+// @Security BearerAuth
+// @Param id path string true "Ticket identifier" format(uuid)
+// @Success 200 {array} comments.Response
+// @Failure 400,401,403,404 {object} httpx.ErrorEnvelope
+// @Router /tickets/{id}/comments [get]
 func (h *Handler) List(w http.ResponseWriter, r *http.Request) error {
 	ticketID, err := httpx.UUIDParam(r, "id")
 	if err != nil {
@@ -36,6 +44,16 @@ func (h *Handler) List(w http.ResponseWriter, r *http.Request) error {
 	return nil
 }
 
+// @Summary Add a ticket comment
+// @Tags Comments
+// @Accept json
+// @Produce json
+// @Security BearerAuth
+// @Param id path string true "Ticket identifier" format(uuid)
+// @Param request body comments.CreateRequest true "Comment content"
+// @Success 201 {object} comments.Response
+// @Failure 400,401,403,404 {object} httpx.ErrorEnvelope
+// @Router /tickets/{id}/comments [post]
 func (h *Handler) Create(w http.ResponseWriter, r *http.Request) error {
 	ticketID, err := httpx.UUIDParam(r, "id")
 	if err != nil {

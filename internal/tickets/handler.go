@@ -19,6 +19,16 @@ func NewHandler(service *Service) *Handler {
 	return &Handler{service: service}
 }
 
+// @Summary Create a ticket
+// @Description USER only. The backend sets the creator, NEW status and timestamps.
+// @Tags Tickets
+// @Accept json
+// @Produce json
+// @Security BearerAuth
+// @Param request body tickets.CreateRequest true "Ticket details"
+// @Success 201 {object} tickets.Response
+// @Failure 400,401,403 {object} httpx.ErrorEnvelope
+// @Router /tickets [post]
 func (h *Handler) Create(w http.ResponseWriter, r *http.Request) error {
 	var request CreateRequest
 	if err := httpx.DecodeJSON(w, r, &request); err != nil {
@@ -36,6 +46,15 @@ func (h *Handler) Create(w http.ResponseWriter, r *http.Request) error {
 	return nil
 }
 
+// @Summary Get a visible ticket
+// @Description USER sees own tickets, SPECIALIST sees assigned tickets, ADMIN sees all.
+// @Tags Tickets
+// @Produce json
+// @Security BearerAuth
+// @Param id path string true "Ticket identifier" format(uuid)
+// @Success 200 {object} tickets.Response
+// @Failure 400,401,403,404 {object} httpx.ErrorEnvelope
+// @Router /tickets/{id} [get]
 func (h *Handler) Get(w http.ResponseWriter, r *http.Request) error {
 	id, actor, err := requestContext(r)
 	if err != nil {
@@ -49,6 +68,25 @@ func (h *Handler) Get(w http.ResponseWriter, r *http.Request) error {
 	return nil
 }
 
+// @Summary List visible tickets
+// @Description USER sees own tickets, SPECIALIST sees assigned tickets, ADMIN sees all.
+// @Tags Tickets
+// @Produce json
+// @Security BearerAuth
+// @Param page query int false "Page number" minimum(1) default(1)
+// @Param pageSize query int false "Page size" minimum(1) maximum(100) default(20)
+// @Param q query string false "Search in ticket titles"
+// @Param status query string false "Filter by status" Enums(NEW,ASSIGNED,IN_PROGRESS,WAITING_FOR_USER,RESOLVED,CLOSED,CANCELLED)
+// @Param priority query string false "Filter by priority" Enums(LOW,MEDIUM,HIGH,CRITICAL)
+// @Param categoryId query string false "Filter by category" format(uuid)
+// @Param assignedTo query string false "Filter by assigned specialist" format(uuid)
+// @Param createdFrom query string false "Created at or after (RFC3339)" format(date-time)
+// @Param createdTo query string false "Created at or before (RFC3339)" format(date-time)
+// @Param sort query string false "Sort field" Enums(createdAt,updatedAt,priority,status)
+// @Param order query string false "Sort direction" Enums(asc,desc)
+// @Success 200 {object} tickets.PageResponse
+// @Failure 400,401,403 {object} httpx.ErrorEnvelope
+// @Router /tickets [get]
 func (h *Handler) List(w http.ResponseWriter, r *http.Request) error {
 	actor, err := appmiddleware.PrincipalFromContext(r.Context())
 	if err != nil {
@@ -70,6 +108,17 @@ func (h *Handler) List(w http.ResponseWriter, r *http.Request) error {
 	return nil
 }
 
+// @Summary Update editable ticket fields
+// @Description The creator may edit while the ticket is NEW. ADMIN may edit at any time.
+// @Tags Tickets
+// @Accept json
+// @Produce json
+// @Security BearerAuth
+// @Param id path string true "Ticket identifier" format(uuid)
+// @Param request body tickets.UpdateRequest true "Fields to change"
+// @Success 200 {object} tickets.Response
+// @Failure 400,401,403,404 {object} httpx.ErrorEnvelope
+// @Router /tickets/{id} [patch]
 func (h *Handler) Update(w http.ResponseWriter, r *http.Request) error {
 	id, actor, err := requestContext(r)
 	if err != nil {
@@ -87,6 +136,17 @@ func (h *Handler) Update(w http.ResponseWriter, r *http.Request) error {
 	return nil
 }
 
+// @Summary Assign or reassign a specialist
+// @Description ADMIN only. A NEW ticket also moves to ASSIGNED.
+// @Tags Tickets
+// @Accept json
+// @Produce json
+// @Security BearerAuth
+// @Param id path string true "Ticket identifier" format(uuid)
+// @Param request body tickets.AssignRequest true "Specialist to assign"
+// @Success 200 {object} tickets.Response
+// @Failure 400,401,403,404,409 {object} httpx.ErrorEnvelope
+// @Router /tickets/{id}/assign [patch]
 func (h *Handler) Assign(w http.ResponseWriter, r *http.Request) error {
 	id, actor, err := requestContext(r)
 	if err != nil {
@@ -107,6 +167,17 @@ func (h *Handler) Assign(w http.ResponseWriter, r *http.Request) error {
 	return nil
 }
 
+// @Summary Change ticket status
+// @Description The transition is validated against the ticket state machine and the actor role.
+// @Tags Tickets
+// @Accept json
+// @Produce json
+// @Security BearerAuth
+// @Param id path string true "Ticket identifier" format(uuid)
+// @Param request body tickets.StatusRequest true "Target status"
+// @Success 200 {object} tickets.Response
+// @Failure 400,401,403,404,409 {object} httpx.ErrorEnvelope
+// @Router /tickets/{id}/status [patch]
 func (h *Handler) ChangeStatus(w http.ResponseWriter, r *http.Request) error {
 	id, actor, err := requestContext(r)
 	if err != nil {

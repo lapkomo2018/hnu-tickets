@@ -3,14 +3,14 @@ package auth
 import "hnu-tickets/internal/users"
 
 type RegisterRequest struct {
-	Name     string `json:"name"`
-	Email    string `json:"email"`
-	Password string `json:"password"`
+	Name     string `json:"name" validate:"required" minLength:"2" maxLength:"100" example:"Maksym Lapko"`
+	Email    string `json:"email" validate:"required" format:"email" example:"user@example.com"`
+	Password string `json:"password" validate:"required" format:"password" minLength:"8" example:"password123"`
 }
 
 type LoginRequest struct {
-	Email    string `json:"email"`
-	Password string `json:"password"`
+	Email    string `json:"email" validate:"required" format:"email" example:"user@example.com"`
+	Password string `json:"password" validate:"required" format:"password" example:"password123"`
 }
 
 type SessionResponse struct {

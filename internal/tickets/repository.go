@@ -7,12 +7,12 @@ import (
 )
 
 type UserSummary struct {
-	ID   uuid.UUID `json:"id"`
+	ID   uuid.UUID `json:"id" format:"uuid"`
 	Name string    `json:"name"`
 }
 
 type CategorySummary struct {
-	ID   uuid.UUID `json:"id"`
+	ID   uuid.UUID `json:"id" format:"uuid"`
 	Name string    `json:"name"`
 }
 
