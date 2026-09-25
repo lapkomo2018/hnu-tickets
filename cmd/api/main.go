@@ -117,6 +117,16 @@ func newRouter(pool *pgxpool.Pool, cfg config.Config) http.Handler {
 	router.Use(appmiddleware.Recoverer)
 	router.Use(appmiddleware.RequestLogger)
 	router.Use(appmiddleware.CORS(cfg.CORS.AllowedOrigins))
+	router.NotFound(func(w http.ResponseWriter, _ *http.Request) {
+		httpx.JSON(w, http.StatusNotFound, map[string]any{
+			"error": map[string]string{"code": "ROUTE_NOT_FOUND", "message": "route not found"},
+		})
+	})
+	router.MethodNotAllowed(func(w http.ResponseWriter, _ *http.Request) {
+		httpx.JSON(w, http.StatusMethodNotAllowed, map[string]any{
+			"error": map[string]string{"code": "METHOD_NOT_ALLOWED", "message": "method not allowed"},
+		})
+	})
 
 	router.Get("/health", func(w http.ResponseWriter, _ *http.Request) {
 		httpx.JSON(w, http.StatusOK, map[string]string{"status": "ok"})

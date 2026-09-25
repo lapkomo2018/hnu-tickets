@@ -8,6 +8,9 @@ import (
 	"time"
 
 	"github.com/google/uuid"
+
+	"hnu-tickets/internal/platform/apperror"
+	"hnu-tickets/internal/platform/httpx"
 )
 
 func RequestID(next http.Handler) http.Handler {
@@ -26,7 +29,7 @@ func Recoverer(next http.Handler) http.Handler {
 		defer func() {
 			if recovered := recover(); recovered != nil {
 				slog.ErrorContext(r.Context(), "panic recovered", "panic", recovered, "stack", string(debug.Stack()))
-				http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
+				httpx.Error(w, r, apperror.New(apperror.KindInternal, "INTERNAL_ERROR", "an unexpected error occurred"))
 			}
 		}()
 		next.ServeHTTP(w, r)

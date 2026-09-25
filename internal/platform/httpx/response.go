@@ -3,6 +3,7 @@ package httpx
 import (
 	"encoding/json"
 	"errors"
+	"io"
 	"log/slog"
 	"net/http"
 
@@ -26,6 +27,9 @@ func DecodeJSON(w http.ResponseWriter, r *http.Request, destination any) error {
 	decoder.DisallowUnknownFields()
 	if err := decoder.Decode(destination); err != nil {
 		return apperror.Wrap(apperror.KindValidation, "INVALID_JSON", "request body is not valid JSON", err)
+	}
+	if err := decoder.Decode(&struct{}{}); err != io.EOF {
+		return apperror.New(apperror.KindValidation, "INVALID_JSON", "request body must contain one JSON value")
 	}
 	return nil
 }

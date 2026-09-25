@@ -46,6 +46,19 @@ func TestRegisterRejectsInvalidJSON(t *testing.T) {
 	require.JSONEq(t, `{"error":{"code":"INVALID_JSON","message":"request body is not valid JSON"}}`, response.Body.String())
 }
 
+func TestRegisterRejectsMultipleJSONValues(t *testing.T) {
+	router := newRouter(nil, testConfig())
+	body := `{"name":"User","email":"user@example.com","password":"password123"} {}`
+	request := httptest.NewRequest(http.MethodPost, "/api/v1/auth/register", strings.NewReader(body))
+	request.Header.Set("Content-Type", "application/json")
+	response := httptest.NewRecorder()
+
+	router.ServeHTTP(response, request)
+
+	require.Equal(t, http.StatusBadRequest, response.Code)
+	require.JSONEq(t, `{"error":{"code":"INVALID_JSON","message":"request body must contain one JSON value"}}`, response.Body.String())
+}
+
 func testConfig() config.Config {
 	return config.Config{
 		JWT:  config.JWTConfig{Secret: "test-secret", TTL: time.Hour},
