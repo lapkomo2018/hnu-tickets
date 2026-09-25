@@ -1,0 +1,44 @@
+package tickets
+
+import (
+	"testing"
+
+	"github.com/google/uuid"
+	"github.com/stretchr/testify/require"
+
+	appmiddleware "hnu-tickets/internal/platform/middleware"
+	"hnu-tickets/internal/users"
+)
+
+func TestTicketVisibilityPolicy(t *testing.T) {
+	creatorID := uuid.New()
+	specialistID := uuid.New()
+	ticket := &Ticket{CreatedBy: creatorID, AssignedTo: &specialistID}
+
+	require.True(t, canView(appmiddleware.Principal{UserID: creatorID, Role: string(users.RoleUser)}, ticket))
+	require.True(t, canView(appmiddleware.Principal{UserID: specialistID, Role: string(users.RoleSpecialist)}, ticket))
+	require.True(t, canView(appmiddleware.Principal{UserID: uuid.New(), Role: string(users.RoleAdmin)}, ticket))
+	require.False(t, canView(appmiddleware.Principal{UserID: uuid.New(), Role: string(users.RoleUser)}, ticket))
+	require.False(t, canView(appmiddleware.Principal{UserID: uuid.New(), Role: string(users.RoleSpecialist)}, ticket))
+}
+
+func TestStatusPolicyRestrictsActors(t *testing.T) {
+	creatorID := uuid.New()
+	specialistID := uuid.New()
+	ticket := &Ticket{CreatedBy: creatorID, AssignedTo: &specialistID, Status: StatusAssigned}
+
+	require.NoError(t, authorizeStatusChange(
+		appmiddleware.Principal{UserID: specialistID, Role: string(users.RoleSpecialist)}, ticket, StatusInProgress,
+	))
+	require.Error(t, authorizeStatusChange(
+		appmiddleware.Principal{UserID: uuid.New(), Role: string(users.RoleSpecialist)}, ticket, StatusInProgress,
+	))
+	require.Error(t, authorizeStatusChange(
+		appmiddleware.Principal{UserID: creatorID, Role: string(users.RoleUser)}, ticket, StatusInProgress,
+	))
+
+	ticket.Status = StatusResolved
+	require.NoError(t, authorizeStatusChange(
+		appmiddleware.Principal{UserID: creatorID, Role: string(users.RoleUser)}, ticket, StatusClosed,
+	))
+}
