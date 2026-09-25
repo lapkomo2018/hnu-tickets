@@ -1,4 +1,4 @@
-.PHONY: run test lint migrate-up migrate-down seed docker-up docker-down
+.PHONY: run test lint swagger migrate-up migrate-down seed docker-up docker-down
 
 run:
 	go run ./cmd/api
@@ -9,6 +9,9 @@ test:
 lint:
 	@test -z "$$(gofmt -l .)"
 	go vet ./...
+
+swagger:
+	go tool swag init -g cmd/api/main.go -o docs --parseInternal
 
 migrate-up:
 	migrate -path migrations -database "$(DATABASE_URL)" up

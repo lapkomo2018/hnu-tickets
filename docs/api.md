@@ -40,4 +40,4 @@ Successful resources are returned directly as JSON. Errors always use:
 
 Ticket listing supports `page`, `pageSize`, `q`, `status`, `priority`, `categoryId`, `assignedTo`, `createdFrom`, `createdTo`, `sort`, and `order`. Analytics supports RFC3339 `from` and `to` period filters.
 
-The complete schema, request bodies, and responses are in `openapi.yaml`.
+The complete schema, request bodies, and responses are in the generated `swagger.yaml`, served as Swagger UI at `/docs/`.

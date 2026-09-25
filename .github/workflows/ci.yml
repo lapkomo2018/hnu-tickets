@@ -20,6 +20,10 @@ jobs:
         run: test -z "$(gofmt -l .)"
       - name: Vet
         run: go vet ./...
+      - name: Check generated OpenAPI specification
+        run: |
+          go tool swag init -g cmd/api/main.go -o docs --parseInternal
+          git diff --exit-code docs
       - name: Test
         run: go test ./...
       - name: Build

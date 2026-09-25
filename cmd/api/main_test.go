@@ -83,6 +83,35 @@ func TestUnsupportedMethodUsesStructuredError(t *testing.T) {
 	requireAPIError(t, response, httpx.CodeMethodNotAllowed, "method not allowed")
 }
 
+func TestDocsRedirectsToTheSwaggerUI(t *testing.T) {
+	router := newRouter(nil, testConfig())
+	request := httptest.NewRequest(http.MethodGet, "/docs", nil)
+	response := httptest.NewRecorder()
+
+	router.ServeHTTP(response, request)
+
+	require.Equal(t, http.StatusPermanentRedirect, response.Code)
+	require.Equal(t, "/docs/index.html", response.Header().Get("Location"))
+}
+
+func TestSwaggerUIServesTheGeneratedSpecification(t *testing.T) {
+	router := newRouter(nil, testConfig())
+	request := httptest.NewRequest(http.MethodGet, "/docs/doc.json", nil)
+	response := httptest.NewRecorder()
+
+	router.ServeHTTP(response, request)
+
+	require.Equal(t, http.StatusOK, response.Code)
+	require.Contains(t, response.Body.String(), "HNU Tickets API")
+	require.Contains(t, response.Body.String(), "/tickets/{id}/status")
+
+	page := httptest.NewRecorder()
+	router.ServeHTTP(page, httptest.NewRequest(http.MethodGet, "/docs/index.html", nil))
+
+	require.Equal(t, http.StatusOK, page.Code)
+	require.Contains(t, page.Body.String(), "swagger-ui")
+}
+
 func testConfig() config.Config {
 	return config.Config{
 		JWT:  config.JWTConfig{Secret: "test-secret", TTL: time.Hour},

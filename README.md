@@ -35,7 +35,7 @@ The API is available at `http://localhost:8080`. Useful endpoints:
 - Health: `GET /health`
 - Readiness: `GET /ready`
 - Swagger UI: `GET /docs/`
-- OpenAPI: `GET /openapi.yaml`
+- OpenAPI specification: `GET /docs/doc.json`
 
 Load demo data after the services start:
 
@@ -105,3 +105,14 @@ go build ./...
 All application endpoints use the `/api/v1` prefix. Send an access token as `Authorization: Bearer <token>`. Dates use RFC3339 and IDs use UUID.
 
 See [docs/api.md](docs/api.md) for permissions and examples, or open the Swagger UI at `/docs/`.
+
+The specification is generated from the handler annotations and the DTO types with
+[swaggo/swag](https://github.com/swaggo/swag), so it never drifts from the code by hand. Regenerate it
+after changing routes, request bodies, or responses:
+
+```sh
+make swagger
+```
+
+This rewrites `docs/docs.go`, `docs/swagger.json`, and `docs/swagger.yaml`, which are committed and
+embedded into the binary. `go test ./...` fails when a route is missing from the specification.

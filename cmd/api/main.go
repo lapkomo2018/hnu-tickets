@@ -12,6 +12,9 @@ import (
 
 	"github.com/go-chi/chi/v5"
 	"github.com/jackc/pgx/v5/pgxpool"
+	httpSwagger "github.com/swaggo/http-swagger/v2"
+
+	_ "hnu-tickets/docs"
 
 	"hnu-tickets/internal/analytics"
 	"hnu-tickets/internal/auth"
@@ -22,11 +25,31 @@ import (
 	"hnu-tickets/internal/platform/database"
 	"hnu-tickets/internal/platform/httpx"
 	appmiddleware "hnu-tickets/internal/platform/middleware"
-	"hnu-tickets/internal/platform/swagger"
 	"hnu-tickets/internal/tickets"
 	"hnu-tickets/internal/users"
 )
 
+// @title HNU Tickets API
+// @version 1.0.0
+// @description Technical support ticket management API with role based access control.
+// @BasePath /api/v1
+// @securityDefinitions.apikey BearerAuth
+// @in header
+// @name Authorization
+// @tag.name Auth
+// @tag.description Registration, login and the authenticated profile
+// @tag.name Users
+// @tag.description User administration and role changes
+// @tag.name Categories
+// @tag.description Ticket categories
+// @tag.name Tickets
+// @tag.description Ticket lifecycle, assignment and listing
+// @tag.name Comments
+// @tag.description Conversation on a ticket
+// @tag.name History
+// @tag.description Immutable ticket audit log
+// @tag.name Analytics
+// @tag.description Administrative ticket metrics
 func main() {
 	if err := run(); err != nil {
 		slog.Error("application stopped", "error", err)
@@ -133,11 +156,10 @@ func newRouter(pool *pgxpool.Pool, cfg config.Config) http.Handler {
 		}
 		httpx.JSON(w, http.StatusOK, map[string]string{"status": "ready"})
 	})
-	router.Get("/openapi.yaml", swagger.OpenAPI)
 	router.Get("/docs", func(w http.ResponseWriter, r *http.Request) {
-		http.Redirect(w, r, "/docs/", http.StatusPermanentRedirect)
+		http.Redirect(w, r, "/docs/index.html", http.StatusPermanentRedirect)
 	})
-	router.Get("/docs/", swagger.UI)
+	router.Get("/docs/*", httpSwagger.Handler(httpSwagger.URL("/docs/doc.json")))
 
 	router.Route("/api/v1", func(api chi.Router) {
 		api.Route("/auth", func(authRouter chi.Router) {

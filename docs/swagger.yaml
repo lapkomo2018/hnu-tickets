@@ -1,0 +1,1427 @@
+basePath: /api/v1
+definitions:
+  analytics.CategoryCount:
+    properties:
+      count:
+        type: integer
+      id:
+        format: uuid
+        type: string
+      name:
+        type: string
+    type: object
+  analytics.Count:
+    properties:
+      count:
+        type: integer
+      value:
+        type: string
+    type: object
+  analytics.Overview:
+    properties:
+      averageResolutionSeconds:
+        type: number
+      closedTickets:
+        type: integer
+      inProgressTickets:
+        type: integer
+      openTickets:
+        type: integer
+      resolvedTickets:
+        type: integer
+      totalTickets:
+        type: integer
+    type: object
+  analytics.SpecialistWorkload:
+    properties:
+      id:
+        format: uuid
+        type: string
+      name:
+        type: string
+      openTickets:
+        type: integer
+    type: object
+  auth.LoginRequest:
+    properties:
+      email:
+        example: user@example.com
+        format: email
+        type: string
+      password:
+        example: password123
+        format: password
+        type: string
+    required:
+    - email
+    - password
+    type: object
+  auth.RegisterRequest:
+    properties:
+      email:
+        example: user@example.com
+        format: email
+        type: string
+      name:
+        example: Maksym Lapko
+        maxLength: 100
+        minLength: 2
+        type: string
+      password:
+        example: password123
+        format: password
+        minLength: 8
+        type: string
+    required:
+    - email
+    - name
+    - password
+    type: object
+  auth.SessionResponse:
+    properties:
+      accessToken:
+        type: string
+      user:
+        $ref: '#/definitions/users.Response'
+    type: object
+  categories.Request:
+    properties:
+      description:
+        example: Printers, monitors and other devices
+        type: string
+      name:
+        example: Hardware
+        maxLength: 100
+        minLength: 2
+        type: string
+    required:
+    - name
+    type: object
+  categories.Response:
+    properties:
+      description:
+        type: string
+      id:
+        format: uuid
+        type: string
+      name:
+        type: string
+    type: object
+  comments.Author:
+    properties:
+      id:
+        format: uuid
+        type: string
+      name:
+        type: string
+    type: object
+  comments.CreateRequest:
+    properties:
+      content:
+        example: Please reconnect the printer
+        maxLength: 5000
+        minLength: 1
+        type: string
+    required:
+    - content
+    type: object
+  comments.Response:
+    properties:
+      Author:
+        $ref: '#/definitions/comments.Author'
+      content:
+        type: string
+      createdAt:
+        format: date-time
+        type: string
+      id:
+        format: uuid
+        type: string
+      ticketId:
+        format: uuid
+        type: string
+    type: object
+  history.Response:
+    properties:
+      action:
+        type: string
+      changedBy:
+        format: uuid
+        type: string
+      createdAt:
+        format: date-time
+        type: string
+      id:
+        format: uuid
+        type: string
+      newValue:
+        type: string
+      oldValue:
+        type: string
+      ticketId:
+        format: uuid
+        type: string
+    type: object
+  httpx.Code:
+    enum:
+    - INTERNAL_ERROR
+    - ROUTE_NOT_FOUND
+    - METHOD_NOT_ALLOWED
+    - INVALID_JSON
+    - INVALID_ID
+    - INVALID_FILTER
+    - INVALID_SPECIALIST
+    - INVALID_PERIOD
+    - UNAUTHORIZED
+    - INVALID_TOKEN
+    type: string
+    x-enum-varnames:
+    - CodeInternalError
+    - CodeRouteNotFound
+    - CodeMethodNotAllowed
+    - CodeInvalidJSON
+    - CodeInvalidID
+    - CodeInvalidFilter
+    - CodeInvalidSpecialist
+    - CodeInvalidPeriod
+    - CodeUnauthorized
+    - CodeInvalidToken
+  httpx.ErrorEnvelope:
+    properties:
+      error:
+        $ref: '#/definitions/httpx.ErrorResponse'
+    type: object
+  httpx.ErrorResponse:
+    properties:
+      code:
+        $ref: '#/definitions/httpx.Code'
+      message:
+        type: string
+    type: object
+  tickets.AssignRequest:
+    properties:
+      specialistId:
+        format: uuid
+        type: string
+    required:
+    - specialistId
+    type: object
+  tickets.CategorySummary:
+    properties:
+      id:
+        format: uuid
+        type: string
+      name:
+        type: string
+    type: object
+  tickets.CreateRequest:
+    properties:
+      categoryId:
+        format: uuid
+        type: string
+      description:
+        example: Nothing prints after the driver update
+        minLength: 1
+        type: string
+      priority:
+        $ref: '#/definitions/tickets.Priority'
+      title:
+        example: Printer is not working
+        maxLength: 255
+        minLength: 3
+        type: string
+    required:
+    - categoryId
+    - description
+    - priority
+    - title
+    type: object
+  tickets.PageResponse:
+    properties:
+      items:
+        items:
+          $ref: '#/definitions/tickets.Response'
+        type: array
+      page:
+        type: integer
+      pageSize:
+        type: integer
+      total:
+        type: integer
+    type: object
+  tickets.Priority:
+    enum:
+    - LOW
+    - MEDIUM
+    - HIGH
+    - CRITICAL
+    type: string
+    x-enum-varnames:
+    - PriorityLow
+    - PriorityMedium
+    - PriorityHigh
+    - PriorityCritical
+  tickets.Response:
+    properties:
+      assignedTo:
+        $ref: '#/definitions/tickets.UserSummary'
+      category:
+        $ref: '#/definitions/tickets.CategorySummary'
+      closedAt:
+        format: date-time
+        type: string
+      createdAt:
+        format: date-time
+        type: string
+      createdBy:
+        $ref: '#/definitions/tickets.UserSummary'
+      description:
+        type: string
+      id:
+        format: uuid
+        type: string
+      priority:
+        $ref: '#/definitions/tickets.Priority'
+      resolvedAt:
+        format: date-time
+        type: string
+      status:
+        $ref: '#/definitions/tickets.Status'
+      title:
+        type: string
+      updatedAt:
+        format: date-time
+        type: string
+    type: object
+  tickets.Status:
+    enum:
+    - NEW
+    - ASSIGNED
+    - IN_PROGRESS
+    - WAITING_FOR_USER
+    - RESOLVED
+    - CLOSED
+    - CANCELLED
+    type: string
+    x-enum-varnames:
+    - StatusNew
+    - StatusAssigned
+    - StatusInProgress
+    - StatusWaitingForUser
+    - StatusResolved
+    - StatusClosed
+    - StatusCancelled
+  tickets.StatusRequest:
+    properties:
+      status:
+        $ref: '#/definitions/tickets.Status'
+    required:
+    - status
+    type: object
+  tickets.UpdateRequest:
+    properties:
+      categoryId:
+        format: uuid
+        type: string
+      description:
+        minLength: 1
+        type: string
+      priority:
+        $ref: '#/definitions/tickets.Priority'
+      title:
+        maxLength: 255
+        minLength: 3
+        type: string
+    type: object
+  tickets.UserSummary:
+    properties:
+      id:
+        format: uuid
+        type: string
+      name:
+        type: string
+    type: object
+  users.Response:
+    properties:
+      createdAt:
+        format: date-time
+        type: string
+      email:
+        format: email
+        type: string
+      id:
+        format: uuid
+        type: string
+      name:
+        type: string
+      role:
+        $ref: '#/definitions/users.Role'
+      updatedAt:
+        format: date-time
+        type: string
+    type: object
+  users.Role:
+    enum:
+    - USER
+    - SPECIALIST
+    - ADMIN
+    type: string
+    x-enum-varnames:
+    - RoleUser
+    - RoleSpecialist
+    - RoleAdmin
+  users.UpdateRequest:
+    properties:
+      email:
+        format: email
+        type: string
+      name:
+        maxLength: 100
+        minLength: 2
+        type: string
+    type: object
+  users.UpdateRoleRequest:
+    properties:
+      role:
+        $ref: '#/definitions/users.Role'
+    required:
+    - role
+    type: object
+info:
+  contact: {}
+  description: Technical support ticket management API with role based access control.
+  title: HNU Tickets API
+  version: 1.0.0
+paths:
+  /analytics/categories:
+    get:
+      description: ADMIN only.
+      parameters:
+      - description: Period start (RFC3339)
+        format: date-time
+        in: query
+        name: from
+        type: string
+      - description: Period end (RFC3339)
+        format: date-time
+        in: query
+        name: to
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/analytics.CategoryCount'
+            type: array
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/httpx.ErrorEnvelope'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/httpx.ErrorEnvelope'
+        "403":
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/httpx.ErrorEnvelope'
+      security:
+      - BearerAuth: []
+      summary: Count tickets by category
+      tags:
+      - Analytics
+  /analytics/overview:
+    get:
+      description: ADMIN only.
+      parameters:
+      - description: Period start (RFC3339)
+        format: date-time
+        in: query
+        name: from
+        type: string
+      - description: Period end (RFC3339)
+        format: date-time
+        in: query
+        name: to
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/analytics.Overview'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/httpx.ErrorEnvelope'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/httpx.ErrorEnvelope'
+        "403":
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/httpx.ErrorEnvelope'
+      security:
+      - BearerAuth: []
+      summary: Get ticket overview
+      tags:
+      - Analytics
+  /analytics/priorities:
+    get:
+      description: ADMIN only.
+      parameters:
+      - description: Period start (RFC3339)
+        format: date-time
+        in: query
+        name: from
+        type: string
+      - description: Period end (RFC3339)
+        format: date-time
+        in: query
+        name: to
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/analytics.Count'
+            type: array
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/httpx.ErrorEnvelope'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/httpx.ErrorEnvelope'
+        "403":
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/httpx.ErrorEnvelope'
+      security:
+      - BearerAuth: []
+      summary: Count tickets by priority
+      tags:
+      - Analytics
+  /analytics/specialists:
+    get:
+      description: ADMIN only.
+      parameters:
+      - description: Period start (RFC3339)
+        format: date-time
+        in: query
+        name: from
+        type: string
+      - description: Period end (RFC3339)
+        format: date-time
+        in: query
+        name: to
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/analytics.SpecialistWorkload'
+            type: array
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/httpx.ErrorEnvelope'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/httpx.ErrorEnvelope'
+        "403":
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/httpx.ErrorEnvelope'
+      security:
+      - BearerAuth: []
+      summary: Get open workload by specialist
+      tags:
+      - Analytics
+  /analytics/statuses:
+    get:
+      description: ADMIN only.
+      parameters:
+      - description: Period start (RFC3339)
+        format: date-time
+        in: query
+        name: from
+        type: string
+      - description: Period end (RFC3339)
+        format: date-time
+        in: query
+        name: to
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/analytics.Count'
+            type: array
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/httpx.ErrorEnvelope'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/httpx.ErrorEnvelope'
+        "403":
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/httpx.ErrorEnvelope'
+      security:
+      - BearerAuth: []
+      summary: Count tickets by status
+      tags:
+      - Analytics
+  /auth/login:
+    post:
+      consumes:
+      - application/json
+      parameters:
+      - description: Credentials
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/auth.LoginRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/auth.SessionResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/httpx.ErrorEnvelope'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/httpx.ErrorEnvelope'
+      summary: Create an access token
+      tags:
+      - Auth
+  /auth/me:
+    get:
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/users.Response'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/httpx.ErrorEnvelope'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/httpx.ErrorEnvelope'
+      security:
+      - BearerAuth: []
+      summary: Get the authenticated user
+      tags:
+      - Auth
+  /auth/register:
+    post:
+      consumes:
+      - application/json
+      description: Creates a USER account and returns an access token. Clients cannot
+        choose a role.
+      parameters:
+      - description: Account details
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/auth.RegisterRequest'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/auth.SessionResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/httpx.ErrorEnvelope'
+        "409":
+          description: Conflict
+          schema:
+            $ref: '#/definitions/httpx.ErrorEnvelope'
+      summary: Register a user account
+      tags:
+      - Auth
+  /categories:
+    get:
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/categories.Response'
+            type: array
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/httpx.ErrorEnvelope'
+      security:
+      - BearerAuth: []
+      summary: List categories
+      tags:
+      - Categories
+    post:
+      consumes:
+      - application/json
+      description: ADMIN only.
+      parameters:
+      - description: Category details
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/categories.Request'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/categories.Response'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/httpx.ErrorEnvelope'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/httpx.ErrorEnvelope'
+        "403":
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/httpx.ErrorEnvelope'
+        "409":
+          description: Conflict
+          schema:
+            $ref: '#/definitions/httpx.ErrorEnvelope'
+      security:
+      - BearerAuth: []
+      summary: Create a category
+      tags:
+      - Categories
+  /categories/{id}:
+    delete:
+      description: ADMIN only. Categories still referenced by tickets cannot be deleted.
+      parameters:
+      - description: Category identifier
+        format: uuid
+        in: path
+        name: id
+        required: true
+        type: string
+      responses:
+        "204":
+          description: Category deleted
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/httpx.ErrorEnvelope'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/httpx.ErrorEnvelope'
+        "403":
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/httpx.ErrorEnvelope'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/httpx.ErrorEnvelope'
+        "409":
+          description: Conflict
+          schema:
+            $ref: '#/definitions/httpx.ErrorEnvelope'
+      security:
+      - BearerAuth: []
+      summary: Delete an unused category
+      tags:
+      - Categories
+    patch:
+      consumes:
+      - application/json
+      description: ADMIN only.
+      parameters:
+      - description: Category identifier
+        format: uuid
+        in: path
+        name: id
+        required: true
+        type: string
+      - description: Category details
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/categories.Request'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/categories.Response'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/httpx.ErrorEnvelope'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/httpx.ErrorEnvelope'
+        "403":
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/httpx.ErrorEnvelope'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/httpx.ErrorEnvelope'
+        "409":
+          description: Conflict
+          schema:
+            $ref: '#/definitions/httpx.ErrorEnvelope'
+      security:
+      - BearerAuth: []
+      summary: Update a category
+      tags:
+      - Categories
+  /tickets:
+    get:
+      description: USER sees own tickets, SPECIALIST sees assigned tickets, ADMIN
+        sees all.
+      parameters:
+      - default: 1
+        description: Page number
+        in: query
+        minimum: 1
+        name: page
+        type: integer
+      - default: 20
+        description: Page size
+        in: query
+        maximum: 100
+        minimum: 1
+        name: pageSize
+        type: integer
+      - description: Search in ticket titles
+        in: query
+        name: q
+        type: string
+      - description: Filter by status
+        enum:
+        - NEW
+        - ASSIGNED
+        - IN_PROGRESS
+        - WAITING_FOR_USER
+        - RESOLVED
+        - CLOSED
+        - CANCELLED
+        in: query
+        name: status
+        type: string
+      - description: Filter by priority
+        enum:
+        - LOW
+        - MEDIUM
+        - HIGH
+        - CRITICAL
+        in: query
+        name: priority
+        type: string
+      - description: Filter by category
+        format: uuid
+        in: query
+        name: categoryId
+        type: string
+      - description: Filter by assigned specialist
+        format: uuid
+        in: query
+        name: assignedTo
+        type: string
+      - description: Created at or after (RFC3339)
+        format: date-time
+        in: query
+        name: createdFrom
+        type: string
+      - description: Created at or before (RFC3339)
+        format: date-time
+        in: query
+        name: createdTo
+        type: string
+      - description: Sort field
+        enum:
+        - createdAt
+        - updatedAt
+        - priority
+        - status
+        in: query
+        name: sort
+        type: string
+      - description: Sort direction
+        enum:
+        - asc
+        - desc
+        in: query
+        name: order
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/tickets.PageResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/httpx.ErrorEnvelope'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/httpx.ErrorEnvelope'
+        "403":
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/httpx.ErrorEnvelope'
+      security:
+      - BearerAuth: []
+      summary: List visible tickets
+      tags:
+      - Tickets
+    post:
+      consumes:
+      - application/json
+      description: USER only. The backend sets the creator, NEW status and timestamps.
+      parameters:
+      - description: Ticket details
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/tickets.CreateRequest'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/tickets.Response'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/httpx.ErrorEnvelope'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/httpx.ErrorEnvelope'
+        "403":
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/httpx.ErrorEnvelope'
+      security:
+      - BearerAuth: []
+      summary: Create a ticket
+      tags:
+      - Tickets
+  /tickets/{id}:
+    get:
+      description: USER sees own tickets, SPECIALIST sees assigned tickets, ADMIN
+        sees all.
+      parameters:
+      - description: Ticket identifier
+        format: uuid
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/tickets.Response'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/httpx.ErrorEnvelope'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/httpx.ErrorEnvelope'
+        "403":
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/httpx.ErrorEnvelope'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/httpx.ErrorEnvelope'
+      security:
+      - BearerAuth: []
+      summary: Get a visible ticket
+      tags:
+      - Tickets
+    patch:
+      consumes:
+      - application/json
+      description: The creator may edit while the ticket is NEW. ADMIN may edit at
+        any time.
+      parameters:
+      - description: Ticket identifier
+        format: uuid
+        in: path
+        name: id
+        required: true
+        type: string
+      - description: Fields to change
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/tickets.UpdateRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/tickets.Response'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/httpx.ErrorEnvelope'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/httpx.ErrorEnvelope'
+        "403":
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/httpx.ErrorEnvelope'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/httpx.ErrorEnvelope'
+      security:
+      - BearerAuth: []
+      summary: Update editable ticket fields
+      tags:
+      - Tickets
+  /tickets/{id}/assign:
+    patch:
+      consumes:
+      - application/json
+      description: ADMIN only. A NEW ticket also moves to ASSIGNED.
+      parameters:
+      - description: Ticket identifier
+        format: uuid
+        in: path
+        name: id
+        required: true
+        type: string
+      - description: Specialist to assign
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/tickets.AssignRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/tickets.Response'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/httpx.ErrorEnvelope'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/httpx.ErrorEnvelope'
+        "403":
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/httpx.ErrorEnvelope'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/httpx.ErrorEnvelope'
+        "409":
+          description: Conflict
+          schema:
+            $ref: '#/definitions/httpx.ErrorEnvelope'
+      security:
+      - BearerAuth: []
+      summary: Assign or reassign a specialist
+      tags:
+      - Tickets
+  /tickets/{id}/comments:
+    get:
+      parameters:
+      - description: Ticket identifier
+        format: uuid
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/comments.Response'
+            type: array
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/httpx.ErrorEnvelope'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/httpx.ErrorEnvelope'
+        "403":
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/httpx.ErrorEnvelope'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/httpx.ErrorEnvelope'
+      security:
+      - BearerAuth: []
+      summary: List ticket comments
+      tags:
+      - Comments
+    post:
+      consumes:
+      - application/json
+      parameters:
+      - description: Ticket identifier
+        format: uuid
+        in: path
+        name: id
+        required: true
+        type: string
+      - description: Comment content
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/comments.CreateRequest'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/comments.Response'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/httpx.ErrorEnvelope'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/httpx.ErrorEnvelope'
+        "403":
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/httpx.ErrorEnvelope'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/httpx.ErrorEnvelope'
+      security:
+      - BearerAuth: []
+      summary: Add a ticket comment
+      tags:
+      - Comments
+  /tickets/{id}/history:
+    get:
+      parameters:
+      - description: Ticket identifier
+        format: uuid
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/history.Response'
+            type: array
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/httpx.ErrorEnvelope'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/httpx.ErrorEnvelope'
+        "403":
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/httpx.ErrorEnvelope'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/httpx.ErrorEnvelope'
+      security:
+      - BearerAuth: []
+      summary: List immutable ticket history
+      tags:
+      - History
+  /tickets/{id}/status:
+    patch:
+      consumes:
+      - application/json
+      description: The transition is validated against the ticket state machine and
+        the actor role.
+      parameters:
+      - description: Ticket identifier
+        format: uuid
+        in: path
+        name: id
+        required: true
+        type: string
+      - description: Target status
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/tickets.StatusRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/tickets.Response'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/httpx.ErrorEnvelope'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/httpx.ErrorEnvelope'
+        "403":
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/httpx.ErrorEnvelope'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/httpx.ErrorEnvelope'
+        "409":
+          description: Conflict
+          schema:
+            $ref: '#/definitions/httpx.ErrorEnvelope'
+      security:
+      - BearerAuth: []
+      summary: Change ticket status
+      tags:
+      - Tickets
+  /users:
+    get:
+      description: ADMIN only.
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/users.Response'
+            type: array
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/httpx.ErrorEnvelope'
+        "403":
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/httpx.ErrorEnvelope'
+      security:
+      - BearerAuth: []
+      summary: List users
+      tags:
+      - Users
+  /users/{id}:
+    get:
+      description: ADMIN only.
+      parameters:
+      - description: User identifier
+        format: uuid
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/users.Response'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/httpx.ErrorEnvelope'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/httpx.ErrorEnvelope'
+        "403":
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/httpx.ErrorEnvelope'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/httpx.ErrorEnvelope'
+      security:
+      - BearerAuth: []
+      summary: Get a user
+      tags:
+      - Users
+    patch:
+      consumes:
+      - application/json
+      description: ADMIN only.
+      parameters:
+      - description: User identifier
+        format: uuid
+        in: path
+        name: id
+        required: true
+        type: string
+      - description: Fields to change
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/users.UpdateRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/users.Response'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/httpx.ErrorEnvelope'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/httpx.ErrorEnvelope'
+        "403":
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/httpx.ErrorEnvelope'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/httpx.ErrorEnvelope'
+        "409":
+          description: Conflict
+          schema:
+            $ref: '#/definitions/httpx.ErrorEnvelope'
+      security:
+      - BearerAuth: []
+      summary: Update a user
+      tags:
+      - Users
+  /users/{id}/role:
+    patch:
+      consumes:
+      - application/json
+      description: ADMIN only.
+      parameters:
+      - description: User identifier
+        format: uuid
+        in: path
+        name: id
+        required: true
+        type: string
+      - description: New role
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/users.UpdateRoleRequest'
+      responses:
+        "204":
+          description: Role updated
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/httpx.ErrorEnvelope'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/httpx.ErrorEnvelope'
+        "403":
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/httpx.ErrorEnvelope'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/httpx.ErrorEnvelope'
+      security:
+      - BearerAuth: []
+      summary: Change a user role
+      tags:
+      - Users
+securityDefinitions:
+  BearerAuth:
+    in: header
+    name: Authorization
+    type: apiKey
+swagger: "2.0"
