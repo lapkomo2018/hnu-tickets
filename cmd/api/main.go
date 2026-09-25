@@ -13,6 +13,7 @@ import (
 	"github.com/go-chi/chi/v5"
 	"github.com/jackc/pgx/v5/pgxpool"
 
+	"hnu-tickets/internal/analytics"
 	"hnu-tickets/internal/auth"
 	"hnu-tickets/internal/categories"
 	"hnu-tickets/internal/comments"
@@ -106,6 +107,10 @@ func newRouter(pool *pgxpool.Pool, cfg config.Config) http.Handler {
 	historyService := history.NewService(historyRepository, ticketsService)
 	historyHandler := history.NewHandler(historyService)
 
+	analyticsRepository := analytics.NewPostgresRepository(pool)
+	analyticsService := analytics.NewService(analyticsRepository)
+	analyticsHandler := analytics.NewHandler(analyticsService)
+
 	router := chi.NewRouter()
 	router.Use(appmiddleware.RequestID)
 	router.Use(appmiddleware.Recoverer)
@@ -142,6 +147,9 @@ func newRouter(pool *pgxpool.Pool, cfg config.Config) http.Handler {
 			})
 			protected.Route("/tickets", func(ticketsRouter chi.Router) {
 				tickets.Routes(ticketsRouter, ticketsHandler, commentsHandler, historyHandler)
+			})
+			protected.Route("/analytics", func(analyticsRouter chi.Router) {
+				analytics.Routes(analyticsRouter, analyticsHandler)
 			})
 		})
 	})
