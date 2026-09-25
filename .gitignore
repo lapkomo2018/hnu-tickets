@@ -1,0 +1,9 @@
+.env
+.idea/
+.vscode/
+bin/
+.gocache/
+.gomodcache/
+coverage.out
+*.exe
+*.test
