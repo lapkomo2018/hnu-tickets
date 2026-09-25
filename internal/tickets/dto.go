@@ -6,25 +6,25 @@ import (
 	"github.com/google/uuid"
 )
 
-type createRequest struct {
+type CreateRequest struct {
 	Title       string    `json:"title"`
 	Description string    `json:"description"`
 	CategoryID  uuid.UUID `json:"categoryId"`
 	Priority    Priority  `json:"priority"`
 }
 
-type updateRequest struct {
+type UpdateRequest struct {
 	Title       *string    `json:"title"`
 	Description *string    `json:"description"`
 	CategoryID  *uuid.UUID `json:"categoryId"`
 	Priority    *Priority  `json:"priority"`
 }
 
-type assignRequest struct {
+type AssignRequest struct {
 	SpecialistID uuid.UUID `json:"specialistId"`
 }
 
-type statusRequest struct {
+type StatusRequest struct {
 	Status Status `json:"status"`
 }
 
@@ -43,7 +43,7 @@ type Response struct {
 	ClosedAt    *time.Time      `json:"closedAt"`
 }
 
-type pageResponse struct {
+type PageResponse struct {
 	Items    []Response `json:"items"`
 	Page     int        `json:"page"`
 	PageSize int        `json:"pageSize"`

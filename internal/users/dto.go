@@ -15,12 +15,12 @@ type Response struct {
 	UpdatedAt time.Time `json:"updatedAt"`
 }
 
-type updateRequest struct {
+type UpdateRequest struct {
 	Name  *string `json:"name"`
 	Email *string `json:"email"`
 }
 
-type updateRoleRequest struct {
+type UpdateRoleRequest struct {
 	Role Role `json:"role"`
 }
 

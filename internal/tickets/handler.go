@@ -20,7 +20,7 @@ func NewHandler(service *Service) *Handler {
 }
 
 func (h *Handler) Create(w http.ResponseWriter, r *http.Request) error {
-	var request createRequest
+	var request CreateRequest
 	if err := httpx.DecodeJSON(w, r, &request); err != nil {
 		return err
 	}
@@ -66,7 +66,7 @@ func (h *Handler) List(w http.ResponseWriter, r *http.Request) error {
 	for _, record := range page.Items {
 		items = append(items, toResponse(record))
 	}
-	httpx.JSON(w, http.StatusOK, pageResponse{Items: items, Page: page.Page, PageSize: page.PageSize, Total: page.Total})
+	httpx.JSON(w, http.StatusOK, PageResponse{Items: items, Page: page.Page, PageSize: page.PageSize, Total: page.Total})
 	return nil
 }
 
@@ -75,7 +75,7 @@ func (h *Handler) Update(w http.ResponseWriter, r *http.Request) error {
 	if err != nil {
 		return err
 	}
-	var request updateRequest
+	var request UpdateRequest
 	if err := httpx.DecodeJSON(w, r, &request); err != nil {
 		return err
 	}
@@ -92,7 +92,7 @@ func (h *Handler) Assign(w http.ResponseWriter, r *http.Request) error {
 	if err != nil {
 		return err
 	}
-	var request assignRequest
+	var request AssignRequest
 	if err := httpx.DecodeJSON(w, r, &request); err != nil {
 		return err
 	}
@@ -112,7 +112,7 @@ func (h *Handler) ChangeStatus(w http.ResponseWriter, r *http.Request) error {
 	if err != nil {
 		return err
 	}
-	var request statusRequest
+	var request StatusRequest
 	if err := httpx.DecodeJSON(w, r, &request); err != nil {
 		return err
 	}

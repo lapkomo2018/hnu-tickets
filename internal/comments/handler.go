@@ -28,7 +28,7 @@ func (h *Handler) List(w http.ResponseWriter, r *http.Request) error {
 	if err != nil {
 		return err
 	}
-	result := make([]response, 0, len(comments))
+	result := make([]Response, 0, len(comments))
 	for _, comment := range comments {
 		result = append(result, toResponse(comment))
 	}
@@ -41,7 +41,7 @@ func (h *Handler) Create(w http.ResponseWriter, r *http.Request) error {
 	if err != nil {
 		return err
 	}
-	var request createRequest
+	var request CreateRequest
 	if err := httpx.DecodeJSON(w, r, &request); err != nil {
 		return err
 	}

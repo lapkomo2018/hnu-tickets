@@ -17,7 +17,7 @@ func NewHandler(service *Service) *Handler {
 }
 
 func (h *Handler) Register(w http.ResponseWriter, r *http.Request) error {
-	var request registerRequest
+	var request RegisterRequest
 	if err := httpx.DecodeJSON(w, r, &request); err != nil {
 		return err
 	}
@@ -30,7 +30,7 @@ func (h *Handler) Register(w http.ResponseWriter, r *http.Request) error {
 }
 
 func (h *Handler) Login(w http.ResponseWriter, r *http.Request) error {
-	var request loginRequest
+	var request LoginRequest
 	if err := httpx.DecodeJSON(w, r, &request); err != nil {
 		return err
 	}

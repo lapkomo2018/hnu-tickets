@@ -6,27 +6,27 @@ import (
 	"github.com/google/uuid"
 )
 
-type createRequest struct {
+type CreateRequest struct {
 	Content string `json:"content"`
 }
 
-type response struct {
+type Response struct {
 	ID        uuid.UUID `json:"id"`
 	TicketID  uuid.UUID `json:"ticketId"`
-	Author    author    `json:"author"`
+	Author    Author    `json:"Author"`
 	Content   string    `json:"content"`
 	CreatedAt time.Time `json:"createdAt"`
 }
 
-type author struct {
+type Author struct {
 	ID   uuid.UUID `json:"id"`
 	Name string    `json:"name"`
 }
 
-func toResponse(comment Comment) response {
-	return response{
+func toResponse(comment Comment) Response {
+	return Response{
 		ID: comment.ID, TicketID: comment.TicketID,
-		Author:  author{ID: comment.AuthorID, Name: comment.AuthorName},
+		Author:  Author{ID: comment.AuthorID, Name: comment.AuthorName},
 		Content: comment.Content, CreatedAt: comment.CreatedAt,
 	}
 }

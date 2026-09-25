@@ -2,7 +2,7 @@ package categories
 
 import "github.com/google/uuid"
 
-type request struct {
+type Request struct {
 	Name        string `json:"name"`
 	Description string `json:"description"`
 }

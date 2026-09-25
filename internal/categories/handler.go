@@ -29,7 +29,7 @@ func (h *Handler) List(w http.ResponseWriter, r *http.Request) error {
 }
 
 func (h *Handler) Create(w http.ResponseWriter, r *http.Request) error {
-	var requestBody request
+	var requestBody Request
 	if err := httpx.DecodeJSON(w, r, &requestBody); err != nil {
 		return err
 	}
@@ -50,7 +50,7 @@ func (h *Handler) Update(w http.ResponseWriter, r *http.Request) error {
 	if err != nil {
 		return err
 	}
-	var requestBody request
+	var requestBody Request
 	if err := httpx.DecodeJSON(w, r, &requestBody); err != nil {
 		return err
 	}

@@ -14,7 +14,7 @@ type Handler struct {
 	service *Service
 }
 
-type response struct {
+type Response struct {
 	ID        uuid.UUID `json:"id"`
 	TicketID  uuid.UUID `json:"ticketId"`
 	ChangedBy uuid.UUID `json:"changedBy"`
@@ -41,9 +41,9 @@ func (h *Handler) List(w http.ResponseWriter, r *http.Request) error {
 	if err != nil {
 		return err
 	}
-	result := make([]response, 0, len(entries))
+	result := make([]Response, 0, len(entries))
 	for _, entry := range entries {
-		result = append(result, response{
+		result = append(result, Response{
 			ID: entry.ID, TicketID: entry.TicketID, ChangedBy: entry.ChangedBy,
 			Action: entry.Action, OldValue: entry.OldValue, NewValue: entry.NewValue, CreatedAt: entry.CreatedAt,
 		})

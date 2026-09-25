@@ -54,7 +54,7 @@ func (h *Handler) Update(w http.ResponseWriter, r *http.Request) error {
 	if err != nil {
 		return err
 	}
-	var request updateRequest
+	var request UpdateRequest
 	if err := httpx.DecodeJSON(w, r, &request); err != nil {
 		return err
 	}
@@ -75,7 +75,7 @@ func (h *Handler) UpdateRole(w http.ResponseWriter, r *http.Request) error {
 	if err != nil {
 		return err
 	}
-	var request updateRoleRequest
+	var request UpdateRoleRequest
 	if err := httpx.DecodeJSON(w, r, &request); err != nil {
 		return err
 	}
