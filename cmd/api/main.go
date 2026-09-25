@@ -15,10 +15,13 @@ import (
 
 	"hnu-tickets/internal/auth"
 	"hnu-tickets/internal/categories"
+	"hnu-tickets/internal/comments"
+	"hnu-tickets/internal/history"
 	"hnu-tickets/internal/platform/config"
 	"hnu-tickets/internal/platform/database"
 	"hnu-tickets/internal/platform/httpx"
 	appmiddleware "hnu-tickets/internal/platform/middleware"
+	"hnu-tickets/internal/tickets"
 	"hnu-tickets/internal/users"
 )
 
@@ -90,6 +93,19 @@ func newRouter(pool *pgxpool.Pool, cfg config.Config) http.Handler {
 	categoriesService := categories.NewService(categoriesRepository)
 	categoriesHandler := categories.NewHandler(categoriesService)
 
+	historyRepository := history.NewPostgresRepository(pool)
+	ticketsRepository := tickets.NewPostgresRepository(pool)
+	ticketsService := tickets.NewService(
+		ticketsRepository, historyRepository, usersRepository, database.NewTransactor(pool),
+	)
+	ticketsHandler := tickets.NewHandler(ticketsService)
+
+	commentsRepository := comments.NewPostgresRepository(pool)
+	commentsService := comments.NewService(commentsRepository, ticketsService)
+	commentsHandler := comments.NewHandler(commentsService)
+	historyService := history.NewService(historyRepository, ticketsService)
+	historyHandler := history.NewHandler(historyService)
+
 	router := chi.NewRouter()
 	router.Use(appmiddleware.RequestID)
 	router.Use(appmiddleware.Recoverer)
@@ -123,6 +139,9 @@ func newRouter(pool *pgxpool.Pool, cfg config.Config) http.Handler {
 			})
 			protected.Route("/categories", func(categoriesRouter chi.Router) {
 				categories.Routes(categoriesRouter, categoriesHandler)
+			})
+			protected.Route("/tickets", func(ticketsRouter chi.Router) {
+				tickets.Routes(ticketsRouter, ticketsHandler, commentsHandler, historyHandler)
 			})
 		})
 	})

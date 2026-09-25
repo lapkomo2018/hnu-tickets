@@ -1,0 +1,42 @@
+package tickets
+
+import (
+	"hnu-tickets/internal/platform/apperror"
+	appmiddleware "hnu-tickets/internal/platform/middleware"
+	"hnu-tickets/internal/users"
+)
+
+func canView(actor appmiddleware.Principal, ticket *Ticket) bool {
+	switch users.Role(actor.Role) {
+	case users.RoleAdmin:
+		return true
+	case users.RoleUser:
+		return ticket.CreatedBy == actor.UserID
+	case users.RoleSpecialist:
+		return ticket.AssignedTo != nil && *ticket.AssignedTo == actor.UserID
+	default:
+		return false
+	}
+}
+
+func authorizeStatusChange(actor appmiddleware.Principal, ticket *Ticket, next Status) error {
+	role := users.Role(actor.Role)
+	if role == users.RoleAdmin {
+		return nil
+	}
+	if role == users.RoleSpecialist && ticket.AssignedTo != nil && *ticket.AssignedTo == actor.UserID {
+		if next == StatusInProgress || next == StatusWaitingForUser || next == StatusResolved {
+			return nil
+		}
+	}
+	if role == users.RoleUser && ticket.CreatedBy == actor.UserID {
+		if next == StatusClosed || next == StatusCancelled || (ticket.Status == StatusWaitingForUser && next == StatusInProgress) {
+			return nil
+		}
+	}
+	return apperror.New(apperror.KindForbidden, "FORBIDDEN", "you cannot change this ticket status")
+}
+
+func forbiddenView() error {
+	return apperror.New(apperror.KindForbidden, "FORBIDDEN", "you cannot access this ticket")
+}
