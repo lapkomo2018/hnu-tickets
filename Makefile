@@ -11,7 +11,7 @@ lint:
 	go vet ./...
 
 swagger:
-	go tool swag init -g cmd/api/main.go -o docs --parseInternal
+	go generate ./...
 
 migrate-up:
 	migrate -path migrations -database "$(DATABASE_URL)" up

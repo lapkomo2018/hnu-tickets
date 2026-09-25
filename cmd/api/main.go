@@ -29,6 +29,8 @@ import (
 	"hnu-tickets/internal/users"
 )
 
+//go:generate go run hnu-tickets/cmd/swagger
+
 // @title HNU Tickets API
 // @version 1.0.0
 // @description Technical support ticket management API with role based access control.

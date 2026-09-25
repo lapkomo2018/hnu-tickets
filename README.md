@@ -107,11 +107,12 @@ All application endpoints use the `/api/v1` prefix. Send an access token as `Aut
 See [docs/api.md](docs/api.md) for permissions and examples, or open the Swagger UI at `/docs/`.
 
 The specification is generated from the handler annotations and the DTO types with
-[swaggo/swag](https://github.com/swaggo/swag), so it never drifts from the code by hand. Regenerate it
-after changing routes, request bodies, or responses:
+[swaggo/swag](https://github.com/swaggo/swag). The generator itself is part of this module
+(`cmd/swagger` drives the swag API), so no external CLI is needed. Regenerate after changing routes,
+request bodies, or responses:
 
 ```sh
-make swagger
+make swagger      # or: go generate ./...
 ```
 
 This rewrites `docs/docs.go`, `docs/swagger.json`, and `docs/swagger.yaml`, which are committed and
