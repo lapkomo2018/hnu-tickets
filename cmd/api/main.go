@@ -111,22 +111,15 @@ func newRouter(pool *pgxpool.Pool, cfg config.Config) http.Handler {
 	analyticsRepository := analytics.NewPostgresRepository(pool)
 	analyticsService := analytics.NewService(analyticsRepository)
 	analyticsHandler := analytics.NewHandler(analyticsService)
+	errorMiddleware := httpx.NewErrorMiddleware(slog.Default())
 
 	router := chi.NewRouter()
 	router.Use(appmiddleware.RequestID)
-	router.Use(appmiddleware.Recoverer)
 	router.Use(appmiddleware.RequestLogger)
+	router.Use(errorMiddleware.Recoverer)
 	router.Use(appmiddleware.CORS(cfg.CORS.AllowedOrigins))
-	router.NotFound(func(w http.ResponseWriter, _ *http.Request) {
-		httpx.JSON(w, http.StatusNotFound, map[string]any{
-			"error": map[string]string{"code": "ROUTE_NOT_FOUND", "message": "route not found"},
-		})
-	})
-	router.MethodNotAllowed(func(w http.ResponseWriter, _ *http.Request) {
-		httpx.JSON(w, http.StatusMethodNotAllowed, map[string]any{
-			"error": map[string]string{"code": "METHOD_NOT_ALLOWED", "message": "method not allowed"},
-		})
-	})
+	router.NotFound(errorMiddleware.NotFound)
+	router.MethodNotAllowed(errorMiddleware.MethodNotAllowed)
 
 	router.Get("/health", func(w http.ResponseWriter, _ *http.Request) {
 		httpx.JSON(w, http.StatusOK, map[string]string{"status": "ok"})
@@ -148,25 +141,25 @@ func newRouter(pool *pgxpool.Pool, cfg config.Config) http.Handler {
 
 	router.Route("/api/v1", func(api chi.Router) {
 		api.Route("/auth", func(authRouter chi.Router) {
-			auth.PublicRoutes(authRouter, authHandler)
+			auth.PublicRoutes(authRouter, authHandler, errorMiddleware)
 			authRouter.Group(func(protectedAuth chi.Router) {
-				protectedAuth.Use(tokenManager.Middleware)
-				auth.ProtectedRoutes(protectedAuth, authHandler)
+				protectedAuth.Use(tokenManager.Middleware(errorMiddleware))
+				auth.ProtectedRoutes(protectedAuth, authHandler, errorMiddleware)
 			})
 		})
 		api.Group(func(protected chi.Router) {
-			protected.Use(tokenManager.Middleware)
+			protected.Use(tokenManager.Middleware(errorMiddleware))
 			protected.Route("/users", func(usersRouter chi.Router) {
-				users.Routes(usersRouter, usersHandler)
+				users.Routes(usersRouter, usersHandler, errorMiddleware)
 			})
 			protected.Route("/categories", func(categoriesRouter chi.Router) {
-				categories.Routes(categoriesRouter, categoriesHandler)
+				categories.Routes(categoriesRouter, categoriesHandler, errorMiddleware)
 			})
 			protected.Route("/tickets", func(ticketsRouter chi.Router) {
-				tickets.Routes(ticketsRouter, ticketsHandler, commentsHandler, historyHandler)
+				tickets.Routes(ticketsRouter, ticketsHandler, commentsHandler, historyHandler, errorMiddleware)
 			})
 			protected.Route("/analytics", func(analyticsRouter chi.Router) {
-				analytics.Routes(analyticsRouter, analyticsHandler)
+				analytics.Routes(analyticsRouter, analyticsHandler, errorMiddleware)
 			})
 		})
 	})

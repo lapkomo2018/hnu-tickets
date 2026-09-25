@@ -11,7 +11,6 @@ import (
 	"github.com/jackc/pgx/v5/pgconn"
 	"github.com/jackc/pgx/v5/pgxpool"
 
-	"hnu-tickets/internal/platform/apperror"
 	"hnu-tickets/internal/platform/database"
 )
 
@@ -31,7 +30,7 @@ func (r *PostgresRepository) Create(ctx context.Context, ticket *Ticket) error {
 	`, ticket.Title, ticket.Description, ticket.Status, ticket.Priority, ticket.CategoryID, ticket.CreatedBy, ticket.AssignedTo).
 		Scan(&ticket.ID, &ticket.CreatedAt, &ticket.UpdatedAt)
 	if isForeignKeyViolation(err) {
-		return apperror.New(apperror.KindValidation, "INVALID_CATEGORY", "category does not exist")
+		return ErrInvalidCategory
 	}
 	if err != nil {
 		return fmt.Errorf("create ticket: %w", err)
@@ -111,7 +110,7 @@ func (r *PostgresRepository) Update(ctx context.Context, ticket *Ticket) error {
 	`, ticket.ID, ticket.Title, ticket.Description, ticket.Status, ticket.Priority,
 		ticket.CategoryID, ticket.AssignedTo, ticket.UpdatedAt, ticket.ResolvedAt, ticket.ClosedAt)
 	if isForeignKeyViolation(err) {
-		return apperror.New(apperror.KindValidation, "INVALID_REFERENCE", "category or assigned user does not exist")
+		return ticketReferenceError(err)
 	}
 	if err != nil {
 		return fmt.Errorf("update ticket: %w", err)
@@ -213,10 +212,25 @@ func buildConditions(filter Filter) ([]string, []any) {
 }
 
 func ticketNotFound() error {
-	return apperror.New(apperror.KindNotFound, "TICKET_NOT_FOUND", "ticket not found")
+	return ErrTicketNotFound
 }
 
 func isForeignKeyViolation(err error) bool {
 	var pgErr *pgconn.PgError
 	return errors.As(err, &pgErr) && pgErr.Code == "23503"
+}
+
+func ticketReferenceError(err error) error {
+	var pgErr *pgconn.PgError
+	if !errors.As(err, &pgErr) {
+		return ErrInvalidReference
+	}
+	switch pgErr.ConstraintName {
+	case "tickets_category_id_fkey":
+		return ErrInvalidCategory
+	case "tickets_assigned_to_fkey":
+		return ErrInvalidSpecialist
+	default:
+		return ErrInvalidReference
+	}
 }

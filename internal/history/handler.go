@@ -28,21 +28,18 @@ func NewHandler(service *Service) *Handler {
 	return &Handler{service: service}
 }
 
-func (h *Handler) List(w http.ResponseWriter, r *http.Request) {
+func (h *Handler) List(w http.ResponseWriter, r *http.Request) error {
 	ticketID, err := httpx.UUIDParam(r, "id")
 	if err != nil {
-		httpx.Error(w, r, err)
-		return
+		return err
 	}
 	actor, err := appmiddleware.PrincipalFromContext(r.Context())
 	if err != nil {
-		httpx.Error(w, r, err)
-		return
+		return err
 	}
 	entries, err := h.service.List(r.Context(), actor, ticketID)
 	if err != nil {
-		httpx.Error(w, r, err)
-		return
+		return err
 	}
 	result := make([]response, 0, len(entries))
 	for _, entry := range entries {
@@ -52,4 +49,5 @@ func (h *Handler) List(w http.ResponseWriter, r *http.Request) {
 		})
 	}
 	httpx.JSON(w, http.StatusOK, result)
+	return nil
 }

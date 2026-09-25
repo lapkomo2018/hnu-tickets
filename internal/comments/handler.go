@@ -15,49 +15,44 @@ func NewHandler(service *Service) *Handler {
 	return &Handler{service: service}
 }
 
-func (h *Handler) List(w http.ResponseWriter, r *http.Request) {
+func (h *Handler) List(w http.ResponseWriter, r *http.Request) error {
 	ticketID, err := httpx.UUIDParam(r, "id")
 	if err != nil {
-		httpx.Error(w, r, err)
-		return
+		return err
 	}
 	actor, err := appmiddleware.PrincipalFromContext(r.Context())
 	if err != nil {
-		httpx.Error(w, r, err)
-		return
+		return err
 	}
 	comments, err := h.service.List(r.Context(), actor, ticketID)
 	if err != nil {
-		httpx.Error(w, r, err)
-		return
+		return err
 	}
 	result := make([]response, 0, len(comments))
 	for _, comment := range comments {
 		result = append(result, toResponse(comment))
 	}
 	httpx.JSON(w, http.StatusOK, result)
+	return nil
 }
 
-func (h *Handler) Create(w http.ResponseWriter, r *http.Request) {
+func (h *Handler) Create(w http.ResponseWriter, r *http.Request) error {
 	ticketID, err := httpx.UUIDParam(r, "id")
 	if err != nil {
-		httpx.Error(w, r, err)
-		return
+		return err
 	}
 	var request createRequest
 	if err := httpx.DecodeJSON(w, r, &request); err != nil {
-		httpx.Error(w, r, err)
-		return
+		return err
 	}
 	actor, err := appmiddleware.PrincipalFromContext(r.Context())
 	if err != nil {
-		httpx.Error(w, r, err)
-		return
+		return err
 	}
 	comment, err := h.service.Create(r.Context(), actor, ticketID, request.Content)
 	if err != nil {
-		httpx.Error(w, r, err)
-		return
+		return err
 	}
 	httpx.JSON(w, http.StatusCreated, toResponse(*comment))
+	return nil
 }

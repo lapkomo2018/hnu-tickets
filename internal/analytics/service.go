@@ -3,7 +3,6 @@ package analytics
 import (
 	"context"
 
-	"hnu-tickets/internal/platform/apperror"
 	appmiddleware "hnu-tickets/internal/platform/middleware"
 	"hnu-tickets/internal/users"
 )
@@ -53,10 +52,10 @@ func (s *Service) Specialists(ctx context.Context, actor appmiddleware.Principal
 
 func authorize(actor appmiddleware.Principal, period Period) error {
 	if users.Role(actor.Role) != users.RoleAdmin {
-		return apperror.New(apperror.KindForbidden, "FORBIDDEN", "administrator access is required")
+		return ErrAdminRequired
 	}
 	if period.From != nil && period.To != nil && period.From.After(*period.To) {
-		return apperror.New(apperror.KindValidation, "INVALID_PERIOD", "from must not be after to")
+		return ErrInvalidPeriod
 	}
 	return nil
 }

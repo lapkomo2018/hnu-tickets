@@ -1,7 +1,6 @@
 package tickets
 
 import (
-	"fmt"
 	"time"
 
 	"github.com/google/uuid"
@@ -25,7 +24,7 @@ type Ticket struct {
 func (t *Ticket) ChangeStatus(next Status, now time.Time) error {
 	_, ok := transitions[t.Status][next]
 	if !ok {
-		return fmt.Errorf("%w: cannot transition ticket from %s to %s", ErrInvalidTransition, t.Status, next)
+		return &InvalidStatusTransitionError{From: t.Status, To: next}
 	}
 
 	previous := t.Status

@@ -5,16 +5,24 @@ import (
 
 	"hnu-tickets/internal/comments"
 	"hnu-tickets/internal/history"
+	"hnu-tickets/internal/platform/httpx"
 )
 
-func Routes(router chi.Router, handler *Handler, commentsHandler *comments.Handler, historyHandler *history.Handler) {
-	router.Get("/", handler.List)
-	router.Post("/", handler.Create)
-	router.Get("/{id}", handler.Get)
-	router.Patch("/{id}", handler.Update)
-	router.Patch("/{id}/assign", handler.Assign)
-	router.Patch("/{id}/status", handler.ChangeStatus)
-	router.Get("/{id}/comments", commentsHandler.List)
-	router.Post("/{id}/comments", commentsHandler.Create)
-	router.Get("/{id}/history", historyHandler.List)
+func Routes(
+	router chi.Router,
+	handler *Handler,
+	commentsHandler *comments.Handler,
+	historyHandler *history.Handler,
+	errors *httpx.ErrorMiddleware,
+) {
+	handle := errors.HandleWith(mapHTTPError)
+	router.Get("/", handle(handler.List))
+	router.Post("/", handle(handler.Create))
+	router.Get("/{id}", handle(handler.Get))
+	router.Patch("/{id}", handle(handler.Update))
+	router.Patch("/{id}/assign", handle(handler.Assign))
+	router.Patch("/{id}/status", handle(handler.ChangeStatus))
+	router.Get("/{id}/comments", handle(commentsHandler.List))
+	router.Post("/{id}/comments", handle(commentsHandler.Create))
+	router.Get("/{id}/history", handle(historyHandler.List))
 }

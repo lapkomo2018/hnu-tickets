@@ -1,11 +1,16 @@
 package analytics
 
-import "github.com/go-chi/chi/v5"
+import (
+	"github.com/go-chi/chi/v5"
 
-func Routes(router chi.Router, handler *Handler) {
-	router.Get("/overview", handler.Overview)
-	router.Get("/statuses", handler.Statuses)
-	router.Get("/priorities", handler.Priorities)
-	router.Get("/categories", handler.Categories)
-	router.Get("/specialists", handler.Specialists)
+	"hnu-tickets/internal/platform/httpx"
+)
+
+func Routes(router chi.Router, handler *Handler, errors *httpx.ErrorMiddleware) {
+	handle := errors.HandleWith(mapHTTPError)
+	router.Get("/overview", handle(handler.Overview))
+	router.Get("/statuses", handle(handler.Statuses))
+	router.Get("/priorities", handle(handler.Priorities))
+	router.Get("/categories", handle(handler.Categories))
+	router.Get("/specialists", handle(handler.Specialists))
 }

@@ -10,7 +10,6 @@ import (
 	"github.com/jackc/pgx/v5/pgconn"
 	"github.com/jackc/pgx/v5/pgxpool"
 
-	"hnu-tickets/internal/platform/apperror"
 	"hnu-tickets/internal/platform/database"
 )
 
@@ -35,7 +34,7 @@ func (r *PostgresRepository) GetByID(ctx context.Context, id uuid.UUID) (*Catego
 		SELECT id, name, description FROM categories WHERE id = $1
 	`, id).Scan(&category.ID, &category.Name, &category.Description)
 	if errors.Is(err, pgx.ErrNoRows) {
-		return nil, apperror.New(apperror.KindNotFound, "CATEGORY_NOT_FOUND", "category not found")
+		return nil, ErrCategoryNotFound
 	}
 	if err != nil {
 		return nil, fmt.Errorf("get category: %w", err)
@@ -73,7 +72,7 @@ func (r *PostgresRepository) Update(ctx context.Context, category *Category) err
 		return err
 	}
 	if command.RowsAffected() == 0 {
-		return apperror.New(apperror.KindNotFound, "CATEGORY_NOT_FOUND", "category not found")
+		return ErrCategoryNotFound
 	}
 	return nil
 }
@@ -82,13 +81,13 @@ func (r *PostgresRepository) Delete(ctx context.Context, id uuid.UUID) error {
 	command, err := database.Executor(ctx, r.pool).Exec(ctx, `DELETE FROM categories WHERE id = $1`, id)
 	var pgErr *pgconn.PgError
 	if errors.As(err, &pgErr) && pgErr.Code == "23503" {
-		return apperror.New(apperror.KindConflict, "CATEGORY_IN_USE", "category is used by one or more tickets")
+		return ErrCategoryInUse
 	}
 	if err != nil {
 		return fmt.Errorf("delete category: %w", err)
 	}
 	if command.RowsAffected() == 0 {
-		return apperror.New(apperror.KindNotFound, "CATEGORY_NOT_FOUND", "category not found")
+		return ErrCategoryNotFound
 	}
 	return nil
 }
@@ -96,7 +95,7 @@ func (r *PostgresRepository) Delete(ctx context.Context, id uuid.UUID) error {
 func categoryWriteError(err error, operation string) error {
 	var pgErr *pgconn.PgError
 	if errors.As(err, &pgErr) && pgErr.Code == "23505" {
-		return apperror.New(apperror.KindConflict, "CATEGORY_NAME_EXISTS", "a category with this name already exists")
+		return ErrCategoryNameExists
 	}
 	if err != nil {
 		return fmt.Errorf("%s category: %w", operation, err)

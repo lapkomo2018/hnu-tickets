@@ -11,7 +11,6 @@ import (
 	"github.com/jackc/pgx/v5/pgconn"
 	"github.com/jackc/pgx/v5/pgxpool"
 
-	"hnu-tickets/internal/platform/apperror"
 	"hnu-tickets/internal/platform/database"
 )
 
@@ -30,7 +29,7 @@ func (r *PostgresRepository) Create(ctx context.Context, user *User) error {
 		RETURNING id, created_at, updated_at
 	`, user.Name, user.Email, user.PasswordHash, user.Role).Scan(&user.ID, &user.CreatedAt, &user.UpdatedAt)
 	if isUniqueViolation(err) {
-		return apperror.New(apperror.KindConflict, "EMAIL_ALREADY_EXISTS", "a user with this email already exists")
+		return ErrEmailAlreadyExists
 	}
 	if err != nil {
 		return fmt.Errorf("create user: %w", err)
@@ -84,10 +83,10 @@ func (r *PostgresRepository) Update(ctx context.Context, user *User) error {
 		RETURNING updated_at
 	`, user.ID, user.Name, user.Email).Scan(&user.UpdatedAt)
 	if errors.Is(err, pgx.ErrNoRows) {
-		return apperror.New(apperror.KindNotFound, "USER_NOT_FOUND", "user not found")
+		return ErrUserNotFound
 	}
 	if isUniqueViolation(err) {
-		return apperror.New(apperror.KindConflict, "EMAIL_ALREADY_EXISTS", "a user with this email already exists")
+		return ErrEmailAlreadyExists
 	}
 	if err != nil {
 		return fmt.Errorf("update user: %w", err)
@@ -104,7 +103,7 @@ func (r *PostgresRepository) UpdateRole(ctx context.Context, id uuid.UUID, role 
 		return fmt.Errorf("update user role: %w", err)
 	}
 	if command.RowsAffected() == 0 {
-		return apperror.New(apperror.KindNotFound, "USER_NOT_FOUND", "user not found")
+		return ErrUserNotFound
 	}
 	return nil
 }
@@ -117,7 +116,7 @@ func scanUser(row scanner) (*User, error) {
 	var user User
 	if err := row.Scan(&user.ID, &user.Name, &user.Email, &user.PasswordHash, &user.Role, &user.CreatedAt, &user.UpdatedAt); err != nil {
 		if errors.Is(err, pgx.ErrNoRows) {
-			return nil, apperror.New(apperror.KindNotFound, "USER_NOT_FOUND", "user not found")
+			return nil, ErrUserNotFound
 		}
 		return nil, fmt.Errorf("scan user: %w", err)
 	}

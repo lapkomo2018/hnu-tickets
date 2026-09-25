@@ -1,7 +1,6 @@
 package tickets
 
 import (
-	"hnu-tickets/internal/platform/apperror"
 	appmiddleware "hnu-tickets/internal/platform/middleware"
 	"hnu-tickets/internal/users"
 )
@@ -34,9 +33,9 @@ func authorizeStatusChange(actor appmiddleware.Principal, ticket *Ticket, next S
 			return nil
 		}
 	}
-	return apperror.New(apperror.KindForbidden, "FORBIDDEN", "you cannot change this ticket status")
+	return ErrStatusChangeForbidden
 }
 
 func forbiddenView() error {
-	return apperror.New(apperror.KindForbidden, "FORBIDDEN", "you cannot access this ticket")
+	return ErrTicketAccessForbidden
 }

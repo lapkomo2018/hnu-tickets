@@ -36,7 +36,10 @@ func TestTicketChangeStatus(t *testing.T) {
 func TestTicketChangeStatusRejectsInvalidTransition(t *testing.T) {
 	ticket := Ticket{Status: StatusNew}
 	err := ticket.ChangeStatus(StatusClosed, time.Now())
-	require.ErrorIs(t, err, ErrInvalidTransition)
+	var transitionErr *InvalidStatusTransitionError
+	require.ErrorAs(t, err, &transitionErr)
+	require.Equal(t, StatusNew, transitionErr.From)
+	require.Equal(t, StatusClosed, transitionErr.To)
 	require.Equal(t, StatusNew, ticket.Status)
 }
 

@@ -7,7 +7,6 @@ import (
 
 	"github.com/google/uuid"
 
-	"hnu-tickets/internal/platform/apperror"
 	appmiddleware "hnu-tickets/internal/platform/middleware"
 	"hnu-tickets/internal/users"
 )
@@ -70,14 +69,14 @@ func validateInput(input Input) (Input, error) {
 	input.Name = strings.TrimSpace(input.Name)
 	input.Description = strings.TrimSpace(input.Description)
 	if length := utf8.RuneCountInString(input.Name); length < 2 || length > 100 {
-		return Input{}, apperror.New(apperror.KindValidation, "INVALID_CATEGORY_NAME", "category name must contain 2 to 100 characters")
+		return Input{}, ErrInvalidName
 	}
 	return input, nil
 }
 
 func requireAdmin(actor appmiddleware.Principal) error {
 	if actor.Role != string(users.RoleAdmin) {
-		return apperror.New(apperror.KindForbidden, "FORBIDDEN", "administrator access is required")
+		return ErrAdminRequired
 	}
 	return nil
 }

@@ -7,7 +7,6 @@ import (
 
 	"github.com/google/uuid"
 
-	"hnu-tickets/internal/platform/apperror"
 	"hnu-tickets/internal/platform/httpx"
 	appmiddleware "hnu-tickets/internal/platform/middleware"
 )
@@ -20,131 +19,121 @@ func NewHandler(service *Service) *Handler {
 	return &Handler{service: service}
 }
 
-func (h *Handler) Create(w http.ResponseWriter, r *http.Request) {
+func (h *Handler) Create(w http.ResponseWriter, r *http.Request) error {
 	var request createRequest
 	if err := httpx.DecodeJSON(w, r, &request); err != nil {
-		httpx.Error(w, r, err)
-		return
+		return err
 	}
 	actor, err := appmiddleware.PrincipalFromContext(r.Context())
 	if err != nil {
-		httpx.Error(w, r, err)
-		return
+		return err
 	}
 	record, err := h.service.Create(r.Context(), actor, CreateInput(request))
 	if err != nil {
-		httpx.Error(w, r, err)
-		return
+		return err
 	}
 	httpx.JSON(w, http.StatusCreated, toResponse(*record))
+	return nil
 }
 
-func (h *Handler) Get(w http.ResponseWriter, r *http.Request) {
-	id, actor, ok := requestContext(w, r)
-	if !ok {
-		return
+func (h *Handler) Get(w http.ResponseWriter, r *http.Request) error {
+	id, actor, err := requestContext(r)
+	if err != nil {
+		return err
 	}
 	record, err := h.service.Get(r.Context(), actor, id)
 	if err != nil {
-		httpx.Error(w, r, err)
-		return
+		return err
 	}
 	httpx.JSON(w, http.StatusOK, toResponse(*record))
+	return nil
 }
 
-func (h *Handler) List(w http.ResponseWriter, r *http.Request) {
+func (h *Handler) List(w http.ResponseWriter, r *http.Request) error {
 	actor, err := appmiddleware.PrincipalFromContext(r.Context())
 	if err != nil {
-		httpx.Error(w, r, err)
-		return
+		return err
 	}
 	filter, err := parseFilter(r)
 	if err != nil {
-		httpx.Error(w, r, err)
-		return
+		return err
 	}
 	page, err := h.service.List(r.Context(), actor, filter)
 	if err != nil {
-		httpx.Error(w, r, err)
-		return
+		return err
 	}
 	items := make([]Response, 0, len(page.Items))
 	for _, record := range page.Items {
 		items = append(items, toResponse(record))
 	}
 	httpx.JSON(w, http.StatusOK, pageResponse{Items: items, Page: page.Page, PageSize: page.PageSize, Total: page.Total})
+	return nil
 }
 
-func (h *Handler) Update(w http.ResponseWriter, r *http.Request) {
-	id, actor, ok := requestContext(w, r)
-	if !ok {
-		return
+func (h *Handler) Update(w http.ResponseWriter, r *http.Request) error {
+	id, actor, err := requestContext(r)
+	if err != nil {
+		return err
 	}
 	var request updateRequest
 	if err := httpx.DecodeJSON(w, r, &request); err != nil {
-		httpx.Error(w, r, err)
-		return
+		return err
 	}
 	record, err := h.service.Update(r.Context(), actor, id, UpdateInput(request))
 	if err != nil {
-		httpx.Error(w, r, err)
-		return
+		return err
 	}
 	httpx.JSON(w, http.StatusOK, toResponse(*record))
+	return nil
 }
 
-func (h *Handler) Assign(w http.ResponseWriter, r *http.Request) {
-	id, actor, ok := requestContext(w, r)
-	if !ok {
-		return
+func (h *Handler) Assign(w http.ResponseWriter, r *http.Request) error {
+	id, actor, err := requestContext(r)
+	if err != nil {
+		return err
 	}
 	var request assignRequest
 	if err := httpx.DecodeJSON(w, r, &request); err != nil {
-		httpx.Error(w, r, err)
-		return
+		return err
 	}
 	if request.SpecialistID == uuid.Nil {
-		httpx.Error(w, r, apperror.New(apperror.KindValidation, "INVALID_SPECIALIST", "specialistId is required"))
-		return
+		return httpx.NewError(http.StatusBadRequest, httpx.CodeInvalidSpecialist, "specialistId is required")
 	}
 	record, err := h.service.Assign(r.Context(), actor, id, request.SpecialistID)
 	if err != nil {
-		httpx.Error(w, r, err)
-		return
+		return err
 	}
 	httpx.JSON(w, http.StatusOK, toResponse(*record))
+	return nil
 }
 
-func (h *Handler) ChangeStatus(w http.ResponseWriter, r *http.Request) {
-	id, actor, ok := requestContext(w, r)
-	if !ok {
-		return
+func (h *Handler) ChangeStatus(w http.ResponseWriter, r *http.Request) error {
+	id, actor, err := requestContext(r)
+	if err != nil {
+		return err
 	}
 	var request statusRequest
 	if err := httpx.DecodeJSON(w, r, &request); err != nil {
-		httpx.Error(w, r, err)
-		return
+		return err
 	}
 	record, err := h.service.ChangeStatus(r.Context(), actor, id, request.Status)
 	if err != nil {
-		httpx.Error(w, r, err)
-		return
+		return err
 	}
 	httpx.JSON(w, http.StatusOK, toResponse(*record))
+	return nil
 }
 
-func requestContext(w http.ResponseWriter, r *http.Request) (uuid.UUID, appmiddleware.Principal, bool) {
+func requestContext(r *http.Request) (uuid.UUID, appmiddleware.Principal, error) {
 	id, err := httpx.UUIDParam(r, "id")
 	if err != nil {
-		httpx.Error(w, r, err)
-		return uuid.Nil, appmiddleware.Principal{}, false
+		return uuid.Nil, appmiddleware.Principal{}, err
 	}
 	actor, err := appmiddleware.PrincipalFromContext(r.Context())
 	if err != nil {
-		httpx.Error(w, r, err)
-		return uuid.Nil, appmiddleware.Principal{}, false
+		return uuid.Nil, appmiddleware.Principal{}, err
 	}
-	return id, actor, true
+	return id, actor, nil
 }
 
 func parseFilter(r *http.Request) (Filter, error) {
@@ -203,5 +192,5 @@ func parseOptionalTime(value string) (*time.Time, error) {
 }
 
 func invalidFilter(name string) error {
-	return apperror.New(apperror.KindValidation, "INVALID_FILTER", name+" filter is invalid")
+	return httpx.NewError(http.StatusBadRequest, httpx.CodeInvalidFilter, name+" filter is invalid")
 }

@@ -10,7 +10,6 @@ import (
 	"github.com/google/uuid"
 
 	"hnu-tickets/internal/history"
-	"hnu-tickets/internal/platform/apperror"
 	appmiddleware "hnu-tickets/internal/platform/middleware"
 	"hnu-tickets/internal/users"
 )
@@ -46,7 +45,7 @@ func NewService(repository Repository, historyRepository history.Repository, use
 
 func (s *Service) Create(ctx context.Context, actor appmiddleware.Principal, input CreateInput) (*Record, error) {
 	if users.Role(actor.Role) != users.RoleUser {
-		return nil, apperror.New(apperror.KindForbidden, "FORBIDDEN", "only users can create tickets")
+		return nil, ErrOnlyUsersCanCreate
 	}
 	input, err := validateCreate(input)
 	if err != nil {
@@ -109,7 +108,7 @@ func (s *Service) Update(ctx context.Context, actor appmiddleware.Principal, id 
 		}
 		isAdmin := users.Role(actor.Role) == users.RoleAdmin
 		if !isAdmin && (ticket.CreatedBy != actor.UserID || ticket.Status != StatusNew) {
-			return apperror.New(apperror.KindForbidden, "FORBIDDEN", "this ticket cannot be edited")
+			return ErrTicketCannotBeEdited
 		}
 		entries, err := applyUpdate(ticket, actor.UserID, input, s.now().UTC())
 		if err != nil {
@@ -133,22 +132,25 @@ func (s *Service) Update(ctx context.Context, actor appmiddleware.Principal, id 
 
 func (s *Service) Assign(ctx context.Context, actor appmiddleware.Principal, id, specialistID uuid.UUID) (*Record, error) {
 	if users.Role(actor.Role) != users.RoleAdmin {
-		return nil, apperror.New(apperror.KindForbidden, "FORBIDDEN", "only administrators can assign tickets")
+		return nil, ErrOnlyAdminsCanAssign
 	}
 	err := s.transactor.WithinTransaction(ctx, func(txCtx context.Context) error {
 		specialist, err := s.users.GetByID(txCtx, specialistID)
 		if err != nil {
+			if errors.Is(err, users.ErrUserNotFound) {
+				return ErrInvalidSpecialist
+			}
 			return err
 		}
 		if specialist.Role != users.RoleSpecialist {
-			return apperror.New(apperror.KindValidation, "SPECIALIST_REQUIRED", "assigned user must be a specialist")
+			return ErrSpecialistRequired
 		}
 		ticket, err := s.repository.GetByIDForUpdate(txCtx, id)
 		if err != nil {
 			return err
 		}
 		if ticket.Status.Terminal() {
-			return apperror.New(apperror.KindConflict, "TERMINAL_TICKET", "closed or cancelled tickets cannot be assigned")
+			return ErrTerminalTicket
 		}
 		var oldValue *string
 		action := history.ActionAssigned
@@ -180,7 +182,7 @@ func (s *Service) Assign(ctx context.Context, actor appmiddleware.Principal, id,
 
 func (s *Service) ChangeStatus(ctx context.Context, actor appmiddleware.Principal, id uuid.UUID, next Status) (*Record, error) {
 	if !next.Valid() {
-		return nil, apperror.New(apperror.KindValidation, "INVALID_STATUS", "status is invalid")
+		return nil, ErrInvalidStatus
 	}
 	err := s.transactor.WithinTransaction(ctx, func(txCtx context.Context) error {
 		ticket, err := s.repository.GetByIDForUpdate(txCtx, id)
@@ -192,9 +194,6 @@ func (s *Service) ChangeStatus(ctx context.Context, actor appmiddleware.Principa
 		}
 		oldStatus := ticket.Status
 		if err := ticket.ChangeStatus(next, s.now()); err != nil {
-			if errors.Is(err, ErrInvalidTransition) {
-				return apperror.New(apperror.KindConflict, "INVALID_STATUS_TRANSITION", err.Error())
-			}
 			return err
 		}
 		if err := s.repository.Update(txCtx, ticket); err != nil {
@@ -227,16 +226,16 @@ func validateCreate(input CreateInput) (CreateInput, error) {
 	input.Title = strings.TrimSpace(input.Title)
 	input.Description = strings.TrimSpace(input.Description)
 	if length := utf8.RuneCountInString(input.Title); length < 3 || length > 255 {
-		return CreateInput{}, apperror.New(apperror.KindValidation, "INVALID_TITLE", "title must contain 3 to 255 characters")
+		return CreateInput{}, ErrInvalidTitle
 	}
 	if input.Description == "" {
-		return CreateInput{}, apperror.New(apperror.KindValidation, "INVALID_DESCRIPTION", "description is required")
+		return CreateInput{}, ErrInvalidDescription
 	}
 	if input.CategoryID == uuid.Nil {
-		return CreateInput{}, apperror.New(apperror.KindValidation, "INVALID_CATEGORY", "categoryId is required")
+		return CreateInput{}, ErrCategoryRequired
 	}
 	if !input.Priority.Valid() {
-		return CreateInput{}, apperror.New(apperror.KindValidation, "INVALID_PRIORITY", "priority is invalid")
+		return CreateInput{}, ErrInvalidPriority
 	}
 	return input, nil
 }
@@ -252,18 +251,18 @@ func normalizeFilter(filter *Filter) error {
 		filter.PageSize = 100
 	}
 	if filter.Status != nil && !filter.Status.Valid() {
-		return apperror.New(apperror.KindValidation, "INVALID_STATUS", "status filter is invalid")
+		return ErrInvalidStatus
 	}
 	if filter.Priority != nil && !filter.Priority.Valid() {
-		return apperror.New(apperror.KindValidation, "INVALID_PRIORITY", "priority filter is invalid")
+		return ErrInvalidPriority
 	}
 	if filter.Order != "" && !strings.EqualFold(filter.Order, "asc") && !strings.EqualFold(filter.Order, "desc") {
-		return apperror.New(apperror.KindValidation, "INVALID_ORDER", "order must be asc or desc")
+		return ErrInvalidOrder
 	}
 	if filter.Sort != "" {
 		allowed := map[string]bool{"createdAt": true, "updatedAt": true, "priority": true, "status": true}
 		if !allowed[filter.Sort] {
-			return apperror.New(apperror.KindValidation, "INVALID_SORT", "sort field is invalid")
+			return ErrInvalidSort
 		}
 	}
 	return nil
@@ -280,7 +279,7 @@ func applyUpdate(ticket *Ticket, actorID uuid.UUID, input UpdateInput, now time.
 	if input.Title != nil {
 		title := strings.TrimSpace(*input.Title)
 		if length := utf8.RuneCountInString(title); length < 3 || length > 255 {
-			return nil, apperror.New(apperror.KindValidation, "INVALID_TITLE", "title must contain 3 to 255 characters")
+			return nil, ErrInvalidTitle
 		}
 		if title != ticket.Title {
 			add(history.ActionUpdated, ticket.Title, title)
@@ -290,7 +289,7 @@ func applyUpdate(ticket *Ticket, actorID uuid.UUID, input UpdateInput, now time.
 	if input.Description != nil {
 		description := strings.TrimSpace(*input.Description)
 		if description == "" {
-			return nil, apperror.New(apperror.KindValidation, "INVALID_DESCRIPTION", "description is required")
+			return nil, ErrInvalidDescription
 		}
 		if description != ticket.Description {
 			add(history.ActionUpdated, ticket.Description, description)
@@ -299,7 +298,7 @@ func applyUpdate(ticket *Ticket, actorID uuid.UUID, input UpdateInput, now time.
 	}
 	if input.Priority != nil {
 		if !input.Priority.Valid() {
-			return nil, apperror.New(apperror.KindValidation, "INVALID_PRIORITY", "priority is invalid")
+			return nil, ErrInvalidPriority
 		}
 		if *input.Priority != ticket.Priority {
 			add(history.ActionPriorityChanged, string(ticket.Priority), string(*input.Priority))

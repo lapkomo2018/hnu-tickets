@@ -1,6 +1,7 @@
 package main
 
 import (
+	"encoding/json"
 	"net/http"
 	"net/http/httptest"
 	"strings"
@@ -10,6 +11,7 @@ import (
 	"github.com/stretchr/testify/require"
 
 	"hnu-tickets/internal/platform/config"
+	"hnu-tickets/internal/platform/httpx"
 )
 
 func TestHealthEndpoint(t *testing.T) {
@@ -31,7 +33,7 @@ func TestProtectedEndpointRequiresToken(t *testing.T) {
 	router.ServeHTTP(response, request)
 
 	require.Equal(t, http.StatusUnauthorized, response.Code)
-	require.JSONEq(t, `{"error":{"code":"UNAUTHORIZED","message":"a bearer token is required"}}`, response.Body.String())
+	requireAPIError(t, response, httpx.CodeUnauthorized, "a bearer token is required")
 }
 
 func TestRegisterRejectsInvalidJSON(t *testing.T) {
@@ -43,7 +45,7 @@ func TestRegisterRejectsInvalidJSON(t *testing.T) {
 	router.ServeHTTP(response, request)
 
 	require.Equal(t, http.StatusBadRequest, response.Code)
-	require.JSONEq(t, `{"error":{"code":"INVALID_JSON","message":"request body is not valid JSON"}}`, response.Body.String())
+	requireAPIError(t, response, httpx.CodeInvalidJSON, "request body is not valid JSON")
 }
 
 func TestRegisterRejectsMultipleJSONValues(t *testing.T) {
@@ -56,7 +58,29 @@ func TestRegisterRejectsMultipleJSONValues(t *testing.T) {
 	router.ServeHTTP(response, request)
 
 	require.Equal(t, http.StatusBadRequest, response.Code)
-	require.JSONEq(t, `{"error":{"code":"INVALID_JSON","message":"request body must contain one JSON value"}}`, response.Body.String())
+	requireAPIError(t, response, httpx.CodeInvalidJSON, "request body must contain one JSON value")
+}
+
+func TestUnknownRouteUsesStructuredError(t *testing.T) {
+	router := newRouter(nil, testConfig())
+	request := httptest.NewRequest(http.MethodGet, "/missing", nil)
+	response := httptest.NewRecorder()
+
+	router.ServeHTTP(response, request)
+
+	require.Equal(t, http.StatusNotFound, response.Code)
+	requireAPIError(t, response, httpx.CodeRouteNotFound, "route not found")
+}
+
+func TestUnsupportedMethodUsesStructuredError(t *testing.T) {
+	router := newRouter(nil, testConfig())
+	request := httptest.NewRequest(http.MethodGet, "/api/v1/auth/login", nil)
+	response := httptest.NewRecorder()
+
+	router.ServeHTTP(response, request)
+
+	require.Equal(t, http.StatusMethodNotAllowed, response.Code)
+	requireAPIError(t, response, httpx.CodeMethodNotAllowed, "method not allowed")
 }
 
 func testConfig() config.Config {
@@ -64,4 +88,12 @@ func testConfig() config.Config {
 		JWT:  config.JWTConfig{Secret: "test-secret", TTL: time.Hour},
 		CORS: config.CORSConfig{AllowedOrigins: []string{"http://localhost:5173"}},
 	}
+}
+
+func requireAPIError(t *testing.T, response *httptest.ResponseRecorder, code httpx.Code, message string) {
+	t.Helper()
+	var envelope httpx.ErrorEnvelope
+	require.NoError(t, json.NewDecoder(response.Body).Decode(&envelope))
+	require.Equal(t, code, envelope.Error.Code)
+	require.Equal(t, message, envelope.Error.Message)
 }

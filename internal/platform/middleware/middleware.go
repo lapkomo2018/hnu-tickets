@@ -3,14 +3,10 @@ package middleware
 import (
 	"log/slog"
 	"net/http"
-	"runtime/debug"
 	"strings"
 	"time"
 
 	"github.com/google/uuid"
-
-	"hnu-tickets/internal/platform/apperror"
-	"hnu-tickets/internal/platform/httpx"
 )
 
 func RequestID(next http.Handler) http.Handler {
@@ -20,18 +16,6 @@ func RequestID(next http.Handler) http.Handler {
 			requestID = uuid.NewString()
 		}
 		w.Header().Set("X-Request-ID", requestID)
-		next.ServeHTTP(w, r)
-	})
-}
-
-func Recoverer(next http.Handler) http.Handler {
-	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		defer func() {
-			if recovered := recover(); recovered != nil {
-				slog.ErrorContext(r.Context(), "panic recovered", "panic", recovered, "stack", string(debug.Stack()))
-				httpx.Error(w, r, apperror.New(apperror.KindInternal, "INTERNAL_ERROR", "an unexpected error occurred"))
-			}
-		}()
 		next.ServeHTTP(w, r)
 	})
 }

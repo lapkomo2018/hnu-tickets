@@ -10,7 +10,6 @@ import (
 
 	"github.com/google/uuid"
 
-	"hnu-tickets/internal/platform/apperror"
 	"hnu-tickets/internal/users"
 )
 
@@ -58,8 +57,7 @@ func (s *Service) Register(ctx context.Context, input RegisterInput) (*Session, 
 func (s *Service) Login(ctx context.Context, input LoginInput) (*Session, error) {
 	user, err := s.users.GetByEmail(ctx, strings.TrimSpace(input.Email))
 	if err != nil {
-		var appErr *apperror.Error
-		if errors.As(err, &appErr) && appErr.Kind == apperror.KindNotFound {
+		if errors.Is(err, users.ErrUserNotFound) {
 			return nil, invalidCredentials()
 		}
 		return nil, err
@@ -85,19 +83,19 @@ func (s *Service) sessionFor(user *users.User) (*Session, error) {
 func validateCredentials(name, email, password string) (string, string, error) {
 	name = strings.TrimSpace(name)
 	if length := utf8.RuneCountInString(name); length < 2 || length > 100 {
-		return "", "", apperror.New(apperror.KindValidation, "INVALID_NAME", "name must contain 2 to 100 characters")
+		return "", "", users.ErrInvalidName
 	}
 	email = strings.ToLower(strings.TrimSpace(email))
 	address, err := mail.ParseAddress(email)
 	if err != nil || address.Address != email {
-		return "", "", apperror.New(apperror.KindValidation, "INVALID_EMAIL", "email address is invalid")
+		return "", "", users.ErrInvalidEmail
 	}
 	if utf8.RuneCountInString(password) < 8 {
-		return "", "", apperror.New(apperror.KindValidation, "INVALID_PASSWORD", "password must contain at least 8 characters")
+		return "", "", ErrInvalidPassword
 	}
 	return name, email, nil
 }
 
 func invalidCredentials() error {
-	return apperror.New(apperror.KindUnauthorized, "INVALID_CREDENTIALS", "email or password is incorrect")
+	return ErrInvalidCredentials
 }

@@ -8,7 +8,6 @@ import (
 
 	"github.com/google/uuid"
 
-	"hnu-tickets/internal/platform/apperror"
 	appmiddleware "hnu-tickets/internal/platform/middleware"
 )
 
@@ -50,7 +49,7 @@ func (s *Service) Update(ctx context.Context, actor appmiddleware.Principal, id 
 	if input.Name != nil {
 		name := strings.TrimSpace(*input.Name)
 		if length := utf8.RuneCountInString(name); length < 2 || length > 100 {
-			return nil, apperror.New(apperror.KindValidation, "INVALID_NAME", "name must contain 2 to 100 characters")
+			return nil, ErrInvalidName
 		}
 		user.Name = name
 	}
@@ -58,7 +57,7 @@ func (s *Service) Update(ctx context.Context, actor appmiddleware.Principal, id 
 		email := strings.ToLower(strings.TrimSpace(*input.Email))
 		address, err := mail.ParseAddress(email)
 		if err != nil || address.Address != email {
-			return nil, apperror.New(apperror.KindValidation, "INVALID_EMAIL", "email address is invalid")
+			return nil, ErrInvalidEmail
 		}
 		user.Email = email
 	}
@@ -73,11 +72,11 @@ func (s *Service) UpdateRole(ctx context.Context, actor appmiddleware.Principal,
 		return forbidden()
 	}
 	if !role.Valid() {
-		return apperror.New(apperror.KindValidation, "INVALID_ROLE", "role is invalid")
+		return ErrInvalidRole
 	}
 	return s.repository.UpdateRole(ctx, id, role)
 }
 
 func forbidden() error {
-	return apperror.New(apperror.KindForbidden, "FORBIDDEN", "administrator access is required")
+	return ErrAdminRequired
 }

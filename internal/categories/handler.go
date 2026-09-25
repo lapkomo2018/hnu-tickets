@@ -15,76 +15,69 @@ func NewHandler(service *Service) *Handler {
 	return &Handler{service: service}
 }
 
-func (h *Handler) List(w http.ResponseWriter, r *http.Request) {
+func (h *Handler) List(w http.ResponseWriter, r *http.Request) error {
 	categories, err := h.service.List(r.Context())
 	if err != nil {
-		httpx.Error(w, r, err)
-		return
+		return err
 	}
 	response := make([]Response, 0, len(categories))
 	for _, category := range categories {
 		response = append(response, toResponse(category))
 	}
 	httpx.JSON(w, http.StatusOK, response)
+	return nil
 }
 
-func (h *Handler) Create(w http.ResponseWriter, r *http.Request) {
+func (h *Handler) Create(w http.ResponseWriter, r *http.Request) error {
 	var requestBody request
 	if err := httpx.DecodeJSON(w, r, &requestBody); err != nil {
-		httpx.Error(w, r, err)
-		return
+		return err
 	}
 	actor, err := appmiddleware.PrincipalFromContext(r.Context())
 	if err != nil {
-		httpx.Error(w, r, err)
-		return
+		return err
 	}
 	category, err := h.service.Create(r.Context(), actor, Input(requestBody))
 	if err != nil {
-		httpx.Error(w, r, err)
-		return
+		return err
 	}
 	httpx.JSON(w, http.StatusCreated, toResponse(*category))
+	return nil
 }
 
-func (h *Handler) Update(w http.ResponseWriter, r *http.Request) {
+func (h *Handler) Update(w http.ResponseWriter, r *http.Request) error {
 	id, err := httpx.UUIDParam(r, "id")
 	if err != nil {
-		httpx.Error(w, r, err)
-		return
+		return err
 	}
 	var requestBody request
 	if err := httpx.DecodeJSON(w, r, &requestBody); err != nil {
-		httpx.Error(w, r, err)
-		return
+		return err
 	}
 	actor, err := appmiddleware.PrincipalFromContext(r.Context())
 	if err != nil {
-		httpx.Error(w, r, err)
-		return
+		return err
 	}
 	category, err := h.service.Update(r.Context(), actor, id, Input(requestBody))
 	if err != nil {
-		httpx.Error(w, r, err)
-		return
+		return err
 	}
 	httpx.JSON(w, http.StatusOK, toResponse(*category))
+	return nil
 }
 
-func (h *Handler) Delete(w http.ResponseWriter, r *http.Request) {
+func (h *Handler) Delete(w http.ResponseWriter, r *http.Request) error {
 	id, err := httpx.UUIDParam(r, "id")
 	if err != nil {
-		httpx.Error(w, r, err)
-		return
+		return err
 	}
 	actor, err := appmiddleware.PrincipalFromContext(r.Context())
 	if err != nil {
-		httpx.Error(w, r, err)
-		return
+		return err
 	}
 	if err := h.service.Delete(r.Context(), actor, id); err != nil {
-		httpx.Error(w, r, err)
-		return
+		return err
 	}
 	w.WriteHeader(http.StatusNoContent)
+	return nil
 }

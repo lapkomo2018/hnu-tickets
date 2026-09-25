@@ -17,9 +17,19 @@ HTTP request
 
 - Domain code defines tickets, roles, priorities, statuses, and lifecycle rules.
 - Application services authorize the actor and coordinate repositories.
-- HTTP handlers decode and validate transport data, then map application errors to status codes.
+- HTTP handlers decode and validate transport data. The error middleware maps application errors to status codes.
 - PostgreSQL adapters use parameterized SQL through `pgx`.
 - The composition root in `cmd/api/main.go` creates and connects dependencies.
+
+## Error boundaries
+
+Each feature owns its expected errors:
+
+```text
+PostgreSQL error -> feature error -> HTTP status and JSON error
+```
+
+PostgreSQL adapters translate expected database conditions into feature errors and wrap unexpected storage failures with operation context. Application services return those errors directly and create feature errors for validation and business rules. Each feature's HTTP adapter assigns statuses and public error codes for errors owned by that feature. The common error middleware writes the response, logs unexpected failures, and hides their internal details.
 
 ## Transaction boundaries
 

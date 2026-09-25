@@ -7,7 +7,6 @@ import (
 
 	"github.com/google/uuid"
 
-	"hnu-tickets/internal/platform/apperror"
 	appmiddleware "hnu-tickets/internal/platform/middleware"
 )
 
@@ -37,7 +36,7 @@ func (s *Service) Create(ctx context.Context, actor appmiddleware.Principal, tic
 	}
 	content = strings.TrimSpace(content)
 	if length := utf8.RuneCountInString(content); length < 1 || length > 5000 {
-		return nil, apperror.New(apperror.KindValidation, "INVALID_COMMENT", "comment must contain 1 to 5000 characters")
+		return nil, ErrInvalidComment
 	}
 	comment := &Comment{TicketID: ticketID, AuthorID: actor.UserID, Content: content}
 	if err := s.repository.Create(ctx, comment); err != nil {
