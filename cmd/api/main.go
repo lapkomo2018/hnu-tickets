@@ -13,10 +13,13 @@ import (
 	"github.com/go-chi/chi/v5"
 	"github.com/jackc/pgx/v5/pgxpool"
 
+	"hnu-tickets/internal/auth"
+	"hnu-tickets/internal/categories"
 	"hnu-tickets/internal/platform/config"
 	"hnu-tickets/internal/platform/database"
 	"hnu-tickets/internal/platform/httpx"
 	appmiddleware "hnu-tickets/internal/platform/middleware"
+	"hnu-tickets/internal/users"
 )
 
 func main() {
@@ -43,7 +46,7 @@ func run() error {
 	}
 	defer pool.Close()
 
-	router := newRouter(pool, cfg.CORS.AllowedOrigins)
+	router := newRouter(pool, cfg)
 	server := &http.Server{
 		Addr:              fmt.Sprintf(":%d", cfg.App.Port),
 		Handler:           router,
@@ -74,12 +77,24 @@ func run() error {
 	return server.Shutdown(shutdownCtx)
 }
 
-func newRouter(pool *pgxpool.Pool, allowedOrigins []string) http.Handler {
+func newRouter(pool *pgxpool.Pool, cfg config.Config) http.Handler {
+	usersRepository := users.NewPostgresRepository(pool)
+	usersService := users.NewService(usersRepository)
+	usersHandler := users.NewHandler(usersService)
+
+	tokenManager := auth.NewTokenManager(cfg.JWT.Secret, cfg.JWT.TTL)
+	authService := auth.NewService(usersRepository, tokenManager)
+	authHandler := auth.NewHandler(authService)
+
+	categoriesRepository := categories.NewPostgresRepository(pool)
+	categoriesService := categories.NewService(categoriesRepository)
+	categoriesHandler := categories.NewHandler(categoriesService)
+
 	router := chi.NewRouter()
 	router.Use(appmiddleware.RequestID)
 	router.Use(appmiddleware.Recoverer)
 	router.Use(appmiddleware.RequestLogger)
-	router.Use(appmiddleware.CORS(allowedOrigins))
+	router.Use(appmiddleware.CORS(cfg.CORS.AllowedOrigins))
 
 	router.Get("/health", func(w http.ResponseWriter, _ *http.Request) {
 		httpx.JSON(w, http.StatusOK, map[string]string{"status": "ok"})
@@ -92,6 +107,24 @@ func newRouter(pool *pgxpool.Pool, allowedOrigins []string) http.Handler {
 			return
 		}
 		httpx.JSON(w, http.StatusOK, map[string]string{"status": "ready"})
+	})
+
+	router.Route("/api/v1", func(api chi.Router) {
+		api.Route("/auth", func(authRouter chi.Router) {
+			auth.PublicRoutes(authRouter, authHandler)
+		})
+		api.Group(func(protected chi.Router) {
+			protected.Use(tokenManager.Middleware)
+			protected.Route("/auth", func(authRouter chi.Router) {
+				auth.ProtectedRoutes(authRouter, authHandler)
+			})
+			protected.Route("/users", func(usersRouter chi.Router) {
+				users.Routes(usersRouter, usersHandler)
+			})
+			protected.Route("/categories", func(categoriesRouter chi.Router) {
+				categories.Routes(categoriesRouter, categoriesHandler)
+			})
+		})
 	})
 	return router
 }
