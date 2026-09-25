@@ -7,7 +7,7 @@ test:
 	go test ./...
 
 lint:
-	gofmt -w .
+	@test -z "$$(gofmt -l .)"
 	go vet ./...
 
 migrate-up:

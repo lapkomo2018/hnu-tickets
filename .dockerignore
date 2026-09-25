@@ -1,0 +1,11 @@
+.git
+.github
+.idea
+.vscode
+.env
+.gocache
+.gomodcache
+bin
+coverage.out
+backend_implementation_plan.md
+*_implementation_plan.md

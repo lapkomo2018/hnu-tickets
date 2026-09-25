@@ -22,6 +22,7 @@ import (
 	"hnu-tickets/internal/platform/database"
 	"hnu-tickets/internal/platform/httpx"
 	appmiddleware "hnu-tickets/internal/platform/middleware"
+	"hnu-tickets/internal/platform/swagger"
 	"hnu-tickets/internal/tickets"
 	"hnu-tickets/internal/users"
 )
@@ -129,16 +130,22 @@ func newRouter(pool *pgxpool.Pool, cfg config.Config) http.Handler {
 		}
 		httpx.JSON(w, http.StatusOK, map[string]string{"status": "ready"})
 	})
+	router.Get("/openapi.yaml", swagger.OpenAPI)
+	router.Get("/swagger", func(w http.ResponseWriter, r *http.Request) {
+		http.Redirect(w, r, "/swagger/", http.StatusPermanentRedirect)
+	})
+	router.Get("/swagger/", swagger.UI)
 
 	router.Route("/api/v1", func(api chi.Router) {
 		api.Route("/auth", func(authRouter chi.Router) {
 			auth.PublicRoutes(authRouter, authHandler)
+			authRouter.Group(func(protectedAuth chi.Router) {
+				protectedAuth.Use(tokenManager.Middleware)
+				auth.ProtectedRoutes(protectedAuth, authHandler)
+			})
 		})
 		api.Group(func(protected chi.Router) {
 			protected.Use(tokenManager.Middleware)
-			protected.Route("/auth", func(authRouter chi.Router) {
-				auth.ProtectedRoutes(authRouter, authHandler)
-			})
 			protected.Route("/users", func(usersRouter chi.Router) {
 				users.Routes(usersRouter, usersHandler)
 			})
