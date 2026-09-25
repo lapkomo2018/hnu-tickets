@@ -117,3 +117,8 @@ make swagger      # or: go generate ./...
 
 This rewrites `docs/docs.go`, `docs/swagger.json`, and `docs/swagger.yaml`, which are committed and
 embedded into the binary. `go test ./...` fails when a route is missing from the specification.
+
+With `APP_ENV=development` the server runs that same generator on startup and serves the fresh
+document, so annotations only need a restart to show up in the Swagger UI. The generator reads Go
+sources, which the container image does not ship: any other environment serves the specification
+compiled into the binary.

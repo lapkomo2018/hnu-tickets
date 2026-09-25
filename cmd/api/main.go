@@ -3,6 +3,7 @@ package main
 import (
 	"context"
 	"fmt"
+	"io"
 	"log/slog"
 	"net/http"
 	"os"
@@ -14,13 +15,14 @@ import (
 	"github.com/jackc/pgx/v5/pgxpool"
 	httpSwagger "github.com/swaggo/http-swagger/v2"
 
-	_ "hnu-tickets/docs"
+	"hnu-tickets/docs"
 
 	"hnu-tickets/internal/analytics"
 	"hnu-tickets/internal/auth"
 	"hnu-tickets/internal/categories"
 	"hnu-tickets/internal/comments"
 	"hnu-tickets/internal/history"
+	"hnu-tickets/internal/platform/apidocs"
 	"hnu-tickets/internal/platform/config"
 	"hnu-tickets/internal/platform/database"
 	"hnu-tickets/internal/platform/httpx"
@@ -76,7 +78,7 @@ func run() error {
 	}
 	defer pool.Close()
 
-	router := newRouter(pool, cfg)
+	router := newRouter(pool, cfg, specification(cfg))
 	server := &http.Server{
 		Addr:              fmt.Sprintf(":%d", cfg.App.Port),
 		Handler:           router,
@@ -107,7 +109,22 @@ func run() error {
 	return server.Shutdown(shutdownCtx)
 }
 
-func newRouter(pool *pgxpool.Pool, cfg config.Config) http.Handler {
+// specification regenerates the document from the annotations while the sources
+// are at hand, and falls back to the copy compiled into the binary.
+func specification(cfg config.Config) string {
+	if cfg.App.Environment != config.EnvironmentDevelopment {
+		return docs.SwaggerInfo.ReadDoc()
+	}
+	generated, err := apidocs.Generate()
+	if err != nil {
+		slog.Warn("serving the embedded API specification", "error", err)
+		return docs.SwaggerInfo.ReadDoc()
+	}
+	slog.Info("API specification regenerated from source")
+	return generated
+}
+
+func newRouter(pool *pgxpool.Pool, cfg config.Config, specification string) http.Handler {
 	usersRepository := users.NewPostgresRepository(pool)
 	usersService := users.NewService(usersRepository)
 	usersHandler := users.NewHandler(usersService)
@@ -160,6 +177,10 @@ func newRouter(pool *pgxpool.Pool, cfg config.Config) http.Handler {
 	})
 	router.Get("/docs", func(w http.ResponseWriter, r *http.Request) {
 		http.Redirect(w, r, "/docs/index.html", http.StatusPermanentRedirect)
+	})
+	router.Get("/docs/doc.json", func(w http.ResponseWriter, _ *http.Request) {
+		w.Header().Set("Content-Type", "application/json")
+		_, _ = io.WriteString(w, specification)
 	})
 	router.Get("/docs/*", httpSwagger.Handler(httpSwagger.URL("/docs/doc.json")))
 

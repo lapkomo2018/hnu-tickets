@@ -9,6 +9,10 @@ import (
 	"time"
 )
 
+// EnvironmentDevelopment is the environment in which the API regenerates its
+// own specification on startup.
+const EnvironmentDevelopment = "development"
+
 type Config struct {
 	App      AppConfig
 	Database DatabaseConfig
@@ -57,7 +61,7 @@ func Load() (Config, error) {
 
 	return Config{
 		App: AppConfig{
-			Environment: envOrDefault("APP_ENV", "development"),
+			Environment: envOrDefault("APP_ENV", EnvironmentDevelopment),
 			Port:        port,
 		},
 		Database: DatabaseConfig{URL: databaseURL},
