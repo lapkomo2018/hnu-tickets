@@ -1,6 +1,6 @@
 # Database
 
-PostgreSQL stores five core tables. UUID primary keys are generated with `pgcrypto`. Status, priority, and role values are protected by check constraints.
+PostgreSQL stores five business tables and a token-revocation table. UUID primary keys are generated with `pgcrypto`. Status, priority, and role values are protected by check constraints.
 
 ```mermaid
 erDiagram
@@ -55,6 +55,10 @@ erDiagram
 Indexes cover ticket status, priority, category, creator, assignee, creation time, and the ticket foreign keys used by comments and history.
 
 Deleting a category referenced by a ticket returns a conflict. Tickets are never physically deleted through the API; cancellation is a status transition. Comments and history use cascading foreign keys only to preserve database consistency if a ticket is removed administratively outside the API.
+
+## Token revocation
+
+`revoked_tokens` stores a UUID token ID and expiry only. Every protected request checks it; logout inserts idempotently and prunes expired entries. Migration `000006` creates the table and expiry index. Raw bearer tokens are not stored.
 
 ## Protection boundaries
 

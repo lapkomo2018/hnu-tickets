@@ -31,6 +31,7 @@ func (m *TokenManager) Issue(userID uuid.UUID, role string) (string, error) {
 	claims := Claims{
 		Role: role,
 		RegisteredClaims: jwt.RegisteredClaims{
+			ID:        uuid.New().String(),
 			Subject:   userID.String(),
 			IssuedAt:  jwt.NewNumericDate(now),
 			ExpiresAt: jwt.NewNumericDate(now.Add(m.ttl)),
@@ -50,7 +51,7 @@ func (m *TokenManager) Parse(raw string) (appmiddleware.Principal, error) {
 			return nil, errors.New("unexpected signing method")
 		}
 		return m.secret, nil
-	})
+	}, jwt.WithExpirationRequired(), jwt.WithTimeFunc(m.now))
 	if err != nil || !token.Valid {
 		return appmiddleware.Principal{}, errors.New("invalid access token")
 	}
@@ -58,5 +59,9 @@ func (m *TokenManager) Parse(raw string) (appmiddleware.Principal, error) {
 	if err != nil {
 		return appmiddleware.Principal{}, errors.New("invalid token subject")
 	}
-	return appmiddleware.Principal{UserID: userID, Role: claims.Role}, nil
+	tokenID, err := uuid.Parse(claims.ID)
+	if err != nil || tokenID == uuid.Nil() || userID == uuid.Nil() {
+		return appmiddleware.Principal{}, errors.New("invalid token identity")
+	}
+	return appmiddleware.Principal{UserID: userID, Role: claims.Role, TokenID: tokenID, ExpiresAt: claims.ExpiresAt.Time}, nil
 }

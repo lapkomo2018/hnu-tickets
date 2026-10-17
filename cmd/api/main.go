@@ -137,7 +137,8 @@ func newRouter(pool *pgxpool.Pool, cfg config.Config, specification string) http
 	usersHandler := users.NewHandler(usersService)
 
 	tokenManager := auth.NewTokenManager(cfg.JWT.Secret, cfg.JWT.TTL)
-	authService := auth.NewService(usersRepository, tokenManager)
+	revocations := auth.NewPostgresRevocations(pool)
+	authService := auth.NewService(usersRepository, tokenManager, revocations)
 	authHandler := auth.NewHandler(authService)
 
 	categoriesRepository := categories.NewPostgresRepository(pool)
@@ -195,12 +196,12 @@ func newRouter(pool *pgxpool.Pool, cfg config.Config, specification string) http
 		api.Route("/auth", func(authRouter chi.Router) {
 			auth.PublicRoutes(authRouter, authHandler, errorMiddleware)
 			authRouter.Group(func(protectedAuth chi.Router) {
-				protectedAuth.Use(tokenManager.Middleware(errorMiddleware))
+				protectedAuth.Use(tokenManager.Middleware(errorMiddleware, usersRepository, revocations))
 				auth.ProtectedRoutes(protectedAuth, authHandler, errorMiddleware)
 			})
 		})
 		api.Group(func(protected chi.Router) {
-			protected.Use(tokenManager.Middleware(errorMiddleware))
+			protected.Use(tokenManager.Middleware(errorMiddleware, usersRepository, revocations))
 			protected.Route("/users", func(usersRouter chi.Router) {
 				users.Routes(usersRouter, usersHandler, errorMiddleware)
 			})

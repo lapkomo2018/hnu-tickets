@@ -82,6 +82,12 @@ Required environment variables:
 The application MUST NOT start without `POSTGRES_USER`, `POSTGRES_PASSWORD`, `POSTGRES_DB`, and `JWT_SECRET`. The API builds
 the connection string from the `POSTGRES_*` variables and escapes the credentials.
 
+## Authentication
+
+Login uses normalized email and bcrypt passwords (at least 8 characters, at most 72 UTF-8 bytes). Every protected request uses the current database role. `POST /api/v1/auth/logout` revokes the current token persistently; other sessions remain active. Apply migration `000006` before deployment; older tokens without `jti` require a new login.
+
+Login and registration are rate-limited per socket peer and API process. See [docs/authentication.md](docs/authentication.md) for limits, proxy considerations and the authorization model.
+
 ## First administrator
 
 Registration always creates `USER` accounts, and only an administrator can change roles

@@ -8,6 +8,7 @@ HNU Tickets is the server part of the **Technical Support Ticket Management Info
 | [Project policy](project_policy.md) | Architecture, coding, testing and change-management rules |
 | [Business logic](business_logic.md) | Entities, invariants, roles, lifecycle and analytics |
 | [Architecture](architecture.md) | Components, dependencies, transactions and deployment |
+| [Authentication](authentication.md) | Login identity, password rules, current roles, token revocation and request limits |
 | [Security policy](security_policy.md) | Mandatory development, operational and vulnerability-management controls |
 | [Privacy policy](privacy_policy.md) | Data categories, purpose, access, retention and removal |
 | [Threat model](threat_model.md) | DFD, trust boundaries, attacker capabilities and STRIDE scenarios |

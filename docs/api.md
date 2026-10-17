@@ -15,7 +15,7 @@ Successful resources are returned directly as JSON. Errors always use:
 
 ## Permissions
 
-This table describes the intended role policy. See [business logic](business_logic.md) for the full lifecycle matrix and [security gaps](security.md#implementation-gaps) for source-observed differences, including token role freshness, author edits after role changes and entering ASSIGNED without a specialist.
+This table describes the intended role policy. See [business logic](business_logic.md) for the full lifecycle matrix and [security gaps](security.md#implementation-gaps) for source-observed differences, including the remaining assignment-invariant gap. Authentication and logout behavior is described in [Authentication](authentication.md).
 
 | Area | USER | SPECIALIST | ADMIN |
 | --- | --- | --- | --- |

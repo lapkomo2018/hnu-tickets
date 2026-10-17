@@ -23,7 +23,7 @@ func NewHandler(service *Service) *Handler {
 // @Produce json
 // @Param request body auth.RegisterRequest true "Account details"
 // @Success 201 {object} auth.SessionResponse
-// @Failure 400,409 {object} httpx.ErrorEnvelope
+// @Failure 400,409,429 {object} httpx.ErrorEnvelope
 // @Router /auth/register [post]
 func (h *Handler) Register(w http.ResponseWriter, r *http.Request) error {
 	var request RegisterRequest
@@ -44,7 +44,7 @@ func (h *Handler) Register(w http.ResponseWriter, r *http.Request) error {
 // @Produce json
 // @Param request body auth.LoginRequest true "Credentials"
 // @Success 200 {object} auth.SessionResponse
-// @Failure 400,401 {object} httpx.ErrorEnvelope
+// @Failure 400,401,429 {object} httpx.ErrorEnvelope
 // @Router /auth/login [post]
 func (h *Handler) Login(w http.ResponseWriter, r *http.Request) error {
 	var request LoginRequest
@@ -76,5 +76,23 @@ func (h *Handler) Me(w http.ResponseWriter, r *http.Request) error {
 		return err
 	}
 	httpx.JSON(w, http.StatusOK, users.ToResponse(*user))
+	return nil
+}
+
+// @Summary Revoke the current access token
+// @Tags Auth
+// @Security BearerAuth
+// @Success 204
+// @Failure 401 {object} httpx.ErrorEnvelope
+// @Router /auth/logout [post]
+func (h *Handler) Logout(w http.ResponseWriter, r *http.Request) error {
+	actor, err := appmiddleware.PrincipalFromContext(r.Context())
+	if err != nil {
+		return err
+	}
+	if err := h.service.Logout(r.Context(), actor); err != nil {
+		return err
+	}
+	w.WriteHeader(http.StatusNoContent)
 	return nil
 }

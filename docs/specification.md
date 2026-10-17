@@ -27,10 +27,10 @@ Permissions are specified in [Business logic](business_logic.md#access-policy). 
 | ID | Required behavior | Acceptance criterion |
 | --- | --- | --- |
 | FR-01 | Register with name, unique email and password; assign only `USER` | A valid registration creates a USER; invalid fields and duplicate email fail; a supplied privileged role cannot create an ADMIN |
-| FR-02 | Authenticate by email/password, provide a session and logout, and reject invalid or expired credentials | Login returns a token and safe profile; invalid login or altered/expired token fails; client logout removes its token. Server-side revocation is additional security work (G-01) |
+| FR-02 | Authenticate by email/password, provide a session and logout, and reject invalid or expired credentials | Login returns a token and safe profile; invalid login or altered/expired token fails; client logout removes its token. Server logout revokes the current token, including copied instances |
 | FR-03 | Only USER can create a ticket with title, description, category and priority | Ticket starts as `NEW`, identifies the authenticated author and has a creation-history entry; failure leaves no partial ticket/history |
 | FR-04 | Provide paginated lists and cards with role-based visibility | USER sees own, SPECIALIST assigned, ADMIN all; guessing an inaccessible UUID does not disclose ticket data |
-| FR-05 | Permit author edits of own NEW tickets and administrator edits of permitted fields | Validate title, description, category and priority; reject ownership/status violations. Explicit current-role checking needs G-03 |
+| FR-05 | Permit author edits of own NEW tickets and administrator edits of permitted fields | Validate title, description, category and priority; reject ownership/status violations. current USER role is checked explicitly |
 | FR-06 | ADMIN assigns/reassigns a SPECIALIST to a nonterminal ticket; first assignment changes NEW to ASSIGNED; suggest the least-loaded specialist for administrator confirmation | Reject a non-specialist or terminal ticket; save assignment/history atomically. Workload analytics exists, but a recommendation operation is not implemented (G-06); assignment invariant needs G-02 |
 | FR-07 | Enforce the defined lifecycle and actor permissions | All listed transitions succeed only for permitted actors; unlisted transitions leave data unchanged; CLOSED/CANCELLED cannot reopen |
 | FR-08 | Participants with ticket access can add/view comments | Nonempty comment of at most 5000 characters is attributed to the actor; unauthorized access fails |
@@ -39,11 +39,11 @@ Permissions are specified in [Business logic](business_logic.md#access-policy). 
 | FR-11 | ADMIN views counts, status/priority/category distributions, specialist workload and average resolution time for a period | Values match an independently calculated dataset; non-admin requests fail |
 | FR-12 | Record major ticket changes with actor, time, action and previous/new values; participants can read history but cannot edit it | Ticket mutations and history are atomic; no history-edit/delete API exists. Stronger storage protection is G-04 |
 
-FR-06 recommendation and the server-side part of FR-02 logout are not claimed complete. [Security](security.md#implementation-gaps) records the source-observed gaps; runtime acceptance is still required.
+The FR-06 recommendation is not implemented; server-side token logout is available. [Security](security.md#implementation-gaps) records the source-observed gaps; runtime acceptance is still required.
 
 ## Data and interface constraints
 
-- Name: 2–100 characters; syntactically valid, normalized unique email; password: at least 8 characters. A clear maximum compatible with bcrypt remains part of G-05.
+- Name: 2–100 characters; syntactically valid, normalized unique email; password: at least 8 characters. Passwords are limited to 72 UTF-8 bytes before bcrypt.
 - Ticket title: 3–255 characters after trimming; description: nonempty; category: an existing UUID; priority: `LOW`, `MEDIUM`, `HIGH` or `CRITICAL`.
 - Category name: 2–100 characters and unique; referenced categories cannot be deleted. Comments: 1–5000 characters after trimming.
 - Statuses and transitions are defined in [Business logic](business_logic.md#status-lifecycle). UUIDs identify resources; date/time values use RFC3339 and lifecycle times are stored in UTC.
@@ -76,8 +76,8 @@ Acceptance records must identify the tested commit, environment, dataset, scenar
 
 | Requirement area | Implementation reference | Verification basis |
 | --- | --- | --- |
-| FR-01–FR-02 | `internal/auth`, `internal/users` | Password/token tests, HTTP scenarios, SEC-01/SEC-03; logout gap G-01 |
-| FR-03–FR-07 | `internal/tickets`, transaction adapter | Domain/policy tests, workflow and rollback scenarios; G-02/G-03/G-06 |
+| FR-01–FR-02 | `internal/auth`, `internal/users` | Password/token tests, HTTP scenarios, SEC-01/SEC-03; current-role and revocation checks |
+| FR-03–FR-07 | `internal/tickets`, transaction adapter | Domain/policy tests, workflow and rollback scenarios; G-02/G-06 |
 | FR-08 | `internal/comments`, ticket access checker | Comment validation and cross-ticket access scenarios |
 | FR-09–FR-10 | Ticket filters and PostgreSQL adapter | Combined filters, pagination and visibility scenarios |
 | FR-11 | `internal/analytics` | Independent counts/time calculation, admin-only checks |

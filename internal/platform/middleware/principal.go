@@ -3,14 +3,17 @@ package middleware
 import (
 	"context"
 	"net/http"
+	"time"
 	"uuid"
 
 	"hnu-tickets/internal/platform/httpx"
 )
 
 type Principal struct {
-	UserID uuid.UUID
-	Role   string
+	UserID    uuid.UUID
+	Role      string
+	TokenID   uuid.UUID
+	ExpiresAt time.Time
 }
 
 type principalKey struct{}

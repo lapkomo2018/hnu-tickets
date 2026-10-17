@@ -22,6 +22,17 @@ func TestTicketVisibilityPolicy(t *testing.T) {
 	require.False(t, canView(appmiddleware.Principal{UserID: uuid.New(), Role: string(users.RoleSpecialist)}, ticket))
 }
 
+func TestAuthorEditRequiresCurrentUserRole(t *testing.T) {
+	id := uuid.New()
+	ticket := &Ticket{CreatedBy: id, Status: StatusNew}
+	require.True(t, canEdit(appmiddleware.Principal{UserID: id, Role: "USER"}, ticket))
+	require.False(t, canEdit(appmiddleware.Principal{UserID: id, Role: "SPECIALIST"}, ticket))
+	require.False(t, canEdit(appmiddleware.Principal{UserID: uuid.New(), Role: "USER"}, ticket))
+	ticket.Status = StatusAssigned
+	require.False(t, canEdit(appmiddleware.Principal{UserID: id, Role: "USER"}, ticket))
+	require.True(t, canEdit(appmiddleware.Principal{UserID: id, Role: "ADMIN"}, ticket))
+}
+
 func TestStatusPolicyRestrictsActors(t *testing.T) {
 	creatorID := uuid.New()
 	specialistID := uuid.New()

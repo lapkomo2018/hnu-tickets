@@ -54,7 +54,7 @@ After committing a mutation, the service reads the response record separately. A
 
 ## Authentication and authorization
 
-JWT authentication establishes a principal with a user UUID and token role. Issued tokens contain `sub`, `role`, issue time and expiry. Current middleware does not reload the account role or revoke tokens on role changes (G-01).
+JWT authentication establishes a principal with a user UUID and token role. Issued tokens contain `sub`, `jti`, `role`, issue time and expiry. Middleware requires a token UUID and expiry, checks persistent revocation state and loads the current role from PostgreSQL before creating the request principal.
 
 Authorization remains in services and policies:
 
@@ -83,7 +83,7 @@ For network deployment, put HTTPS termination at a reverse proxy or equivalent t
 | One process and one relational database | Suitable for the educational scope; avoids distributed coordination, but deployment scales as one service |
 | Feature grouping with repository interfaces | Keeps related behavior together and allows isolated tests; does not require a full DDD framework |
 | Transactional audit writes and ticket row locks | Preserve mutation/history consistency and serialize competing ticket workflows |
-| JWT with token-carried role | Simple request authentication, with stale-authorization/revocation limitations tracked as G-01 |
+| JWT identity with current database role and revocation checks | Signed authentication plus current permissions; logout invalidation persists across API restarts |
 | Relational aggregates for analytics | No extra reporting pipeline; large-period report performance must be measured |
 
 The [threat model](threat_model.md) defines data flows and trust boundaries for this architecture. [Security requirements](security.md) records controls and remaining implementation gaps.
