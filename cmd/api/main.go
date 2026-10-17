@@ -2,6 +2,7 @@ package main
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"io"
 	"log/slog"
@@ -16,7 +17,6 @@ import (
 	httpSwagger "github.com/swaggo/http-swagger/v2"
 
 	"hnu-tickets/docs"
-
 	"hnu-tickets/internal/analytics"
 	"hnu-tickets/internal/auth"
 	"hnu-tickets/internal/categories"
@@ -99,7 +99,7 @@ func run() error {
 	select {
 	case <-shutdownSignal.Done():
 	case err := <-serverErrors:
-		if err != nil && err != http.ErrServerClosed {
+		if err != nil && !errors.Is(err, http.ErrServerClosed) {
 			return fmt.Errorf("serve HTTP: %w", err)
 		}
 	}

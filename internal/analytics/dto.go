@@ -1,6 +1,6 @@
 package analytics
 
-import "github.com/google/uuid"
+import "uuid"
 
 type Overview struct {
 	TotalTickets             int64   `json:"totalTickets"`

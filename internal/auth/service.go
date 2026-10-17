@@ -7,8 +7,7 @@ import (
 	"net/mail"
 	"strings"
 	"unicode/utf8"
-
-	"github.com/google/uuid"
+	"uuid"
 
 	"hnu-tickets/internal/users"
 )

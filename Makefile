@@ -1,4 +1,4 @@
-.PHONY: run test lint swagger migrate-up migrate-down seed docker-up docker-down
+.PHONY: run test lint fmt hooks swagger migrate-up migrate-down seed docker-up docker-down
 
 run:
 	go run ./cmd/api
@@ -6,9 +6,17 @@ run:
 test:
 	go test ./...
 
+GOLANGCI_LINT = go tool -modfile=tools/go.mod golangci-lint
+
 lint:
-	@test -z "$$(gofmt -l .)"
-	go vet ./...
+	$(GOLANGCI_LINT) fmt --diff
+	$(GOLANGCI_LINT) run
+
+fmt:
+	$(GOLANGCI_LINT) fmt
+
+hooks:
+	go tool -modfile=tools/go.mod lefthook install
 
 swagger:
 	go generate ./...

@@ -4,9 +4,9 @@ import (
 	"errors"
 	"fmt"
 	"time"
+	"uuid"
 
 	"github.com/golang-jwt/jwt/v5"
-	"github.com/google/uuid"
 
 	appmiddleware "hnu-tickets/internal/platform/middleware"
 )

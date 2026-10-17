@@ -2,8 +2,7 @@ package tickets
 
 import (
 	"time"
-
-	"github.com/google/uuid"
+	"uuid"
 )
 
 type Filter struct {

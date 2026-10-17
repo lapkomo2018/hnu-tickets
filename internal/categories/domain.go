@@ -1,6 +1,6 @@
 package categories
 
-import "github.com/google/uuid"
+import "uuid"
 
 type Category struct {
 	ID          uuid.UUID

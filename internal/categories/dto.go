@@ -1,6 +1,6 @@
 package categories
 
-import "github.com/google/uuid"
+import "uuid"
 
 type Request struct {
 	Name        string `json:"name" validate:"required" minLength:"2" maxLength:"100" example:"Hardware"`

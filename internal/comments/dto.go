@@ -2,8 +2,7 @@ package comments
 
 import (
 	"time"
-
-	"github.com/google/uuid"
+	"uuid"
 )
 
 type CreateRequest struct {

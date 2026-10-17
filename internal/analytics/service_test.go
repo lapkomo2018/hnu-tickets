@@ -3,8 +3,8 @@ package analytics
 import (
 	"testing"
 	"time"
+	"uuid"
 
-	"github.com/google/uuid"
 	"github.com/stretchr/testify/require"
 
 	appmiddleware "hnu-tickets/internal/platform/middleware"

@@ -5,8 +5,7 @@ import (
 	"net/mail"
 	"strings"
 	"unicode/utf8"
-
-	"github.com/google/uuid"
+	"uuid"
 
 	appmiddleware "hnu-tickets/internal/platform/middleware"
 )

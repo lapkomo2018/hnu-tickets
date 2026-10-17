@@ -100,6 +100,19 @@ make lint
 go build ./...
 ```
 
+`make lint` runs [golangci-lint](https://golangci-lint.run) (configured in `.golangci.yml`) and fails on
+unformatted code or unsorted imports; `make fmt` fixes formatting. Linters and git hooks are pinned in
+`tools/go.mod`, so no global install is needed.
+
+Install the git hooks once per clone:
+
+```sh
+make hooks
+```
+
+The pre-commit hook formats staged Go files, regenerates the OpenAPI specification and stages it, lints,
+checks `go mod tidy`, and runs the tests; the pre-push hook reruns the tests with the race detector.
+
 ## API
 
 All application endpoints use the `/api/v1` prefix. Send an access token as `Authorization: Bearer <token>`. Dates use RFC3339 and IDs use UUID.

@@ -6,8 +6,7 @@ import (
 	"strings"
 	"time"
 	"unicode/utf8"
-
-	"github.com/google/uuid"
+	"uuid"
 
 	"hnu-tickets/internal/history"
 	appmiddleware "hnu-tickets/internal/platform/middleware"
@@ -231,7 +230,7 @@ func validateCreate(input CreateInput) (CreateInput, error) {
 	if input.Description == "" {
 		return CreateInput{}, ErrInvalidDescription
 	}
-	if input.CategoryID == uuid.Nil {
+	if input.CategoryID == uuid.Nil() {
 		return CreateInput{}, ErrCategoryRequired
 	}
 	if !input.Priority.Valid() {

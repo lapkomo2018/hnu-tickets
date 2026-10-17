@@ -2,8 +2,7 @@ package history
 
 import (
 	"time"
-
-	"github.com/google/uuid"
+	"uuid"
 )
 
 const (

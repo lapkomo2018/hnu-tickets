@@ -3,8 +3,7 @@ package middleware
 import (
 	"context"
 	"net/http"
-
-	"github.com/google/uuid"
+	"uuid"
 
 	"hnu-tickets/internal/platform/httpx"
 )

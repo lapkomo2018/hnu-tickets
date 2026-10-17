@@ -17,7 +17,7 @@ import (
 
 func TestHealthEndpoint(t *testing.T) {
 	router := testRouter()
-	request := httptest.NewRequest(http.MethodGet, "/health", nil)
+	request := httptest.NewRequestWithContext(t.Context(), http.MethodGet, "/health", nil)
 	response := httptest.NewRecorder()
 
 	router.ServeHTTP(response, request)
@@ -28,7 +28,7 @@ func TestHealthEndpoint(t *testing.T) {
 
 func TestProtectedEndpointRequiresToken(t *testing.T) {
 	router := testRouter()
-	request := httptest.NewRequest(http.MethodGet, "/api/v1/tickets", nil)
+	request := httptest.NewRequestWithContext(t.Context(), http.MethodGet, "/api/v1/tickets", nil)
 	response := httptest.NewRecorder()
 
 	router.ServeHTTP(response, request)
@@ -39,7 +39,7 @@ func TestProtectedEndpointRequiresToken(t *testing.T) {
 
 func TestRegisterRejectsInvalidJSON(t *testing.T) {
 	router := testRouter()
-	request := httptest.NewRequest(http.MethodPost, "/api/v1/auth/register", strings.NewReader(`{"name":`))
+	request := httptest.NewRequestWithContext(t.Context(), http.MethodPost, "/api/v1/auth/register", strings.NewReader(`{"name":`))
 	request.Header.Set("Content-Type", "application/json")
 	response := httptest.NewRecorder()
 
@@ -52,7 +52,7 @@ func TestRegisterRejectsInvalidJSON(t *testing.T) {
 func TestRegisterRejectsMultipleJSONValues(t *testing.T) {
 	router := testRouter()
 	body := `{"name":"User","email":"user@example.com","password":"password123"} {}`
-	request := httptest.NewRequest(http.MethodPost, "/api/v1/auth/register", strings.NewReader(body))
+	request := httptest.NewRequestWithContext(t.Context(), http.MethodPost, "/api/v1/auth/register", strings.NewReader(body))
 	request.Header.Set("Content-Type", "application/json")
 	response := httptest.NewRecorder()
 
@@ -64,7 +64,7 @@ func TestRegisterRejectsMultipleJSONValues(t *testing.T) {
 
 func TestUnknownRouteUsesStructuredError(t *testing.T) {
 	router := testRouter()
-	request := httptest.NewRequest(http.MethodGet, "/missing", nil)
+	request := httptest.NewRequestWithContext(t.Context(), http.MethodGet, "/missing", nil)
 	response := httptest.NewRecorder()
 
 	router.ServeHTTP(response, request)
@@ -75,7 +75,7 @@ func TestUnknownRouteUsesStructuredError(t *testing.T) {
 
 func TestUnsupportedMethodUsesStructuredError(t *testing.T) {
 	router := testRouter()
-	request := httptest.NewRequest(http.MethodGet, "/api/v1/auth/login", nil)
+	request := httptest.NewRequestWithContext(t.Context(), http.MethodGet, "/api/v1/auth/login", nil)
 	response := httptest.NewRecorder()
 
 	router.ServeHTTP(response, request)
@@ -86,7 +86,7 @@ func TestUnsupportedMethodUsesStructuredError(t *testing.T) {
 
 func TestDocsRedirectsToTheSwaggerUI(t *testing.T) {
 	router := testRouter()
-	request := httptest.NewRequest(http.MethodGet, "/docs", nil)
+	request := httptest.NewRequestWithContext(t.Context(), http.MethodGet, "/docs", nil)
 	response := httptest.NewRecorder()
 
 	router.ServeHTTP(response, request)
@@ -97,7 +97,7 @@ func TestDocsRedirectsToTheSwaggerUI(t *testing.T) {
 
 func TestSwaggerUIServesTheGeneratedSpecification(t *testing.T) {
 	router := testRouter()
-	request := httptest.NewRequest(http.MethodGet, "/docs/doc.json", nil)
+	request := httptest.NewRequestWithContext(t.Context(), http.MethodGet, "/docs/doc.json", nil)
 	response := httptest.NewRecorder()
 
 	router.ServeHTTP(response, request)
@@ -107,7 +107,7 @@ func TestSwaggerUIServesTheGeneratedSpecification(t *testing.T) {
 	require.Contains(t, response.Body.String(), "/tickets/{id}/status")
 
 	page := httptest.NewRecorder()
-	router.ServeHTTP(page, httptest.NewRequest(http.MethodGet, "/docs/index.html", nil))
+	router.ServeHTTP(page, httptest.NewRequestWithContext(t.Context(), http.MethodGet, "/docs/index.html", nil))
 
 	require.Equal(t, http.StatusOK, page.Code)
 	require.Contains(t, page.Body.String(), "swagger-ui")

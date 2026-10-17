@@ -30,7 +30,7 @@ func TestErrorMiddlewareMapsTransportAndMappedErrors(t *testing.T) {
 	middleware := newTestErrorMiddleware()
 	for _, test := range tests {
 		t.Run(test.name, func(t *testing.T) {
-			request := httptest.NewRequest(http.MethodGet, "/", nil)
+			request := httptest.NewRequestWithContext(t.Context(), http.MethodGet, "/", nil)
 			response := httptest.NewRecorder()
 			wrap := middleware.Handle
 			if test.mapper != nil {
@@ -53,7 +53,7 @@ func TestErrorMiddlewareRecoversPanics(t *testing.T) {
 	handler := middleware.Recoverer(http.HandlerFunc(func(http.ResponseWriter, *http.Request) {
 		panic("boom")
 	}))
-	request := httptest.NewRequest(http.MethodGet, "/", nil)
+	request := httptest.NewRequestWithContext(t.Context(), http.MethodGet, "/", nil)
 	response := httptest.NewRecorder()
 
 	handler.ServeHTTP(response, request)

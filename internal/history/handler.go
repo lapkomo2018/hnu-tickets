@@ -3,8 +3,7 @@ package history
 import (
 	"net/http"
 	"time"
-
-	"github.com/google/uuid"
+	"uuid"
 
 	"hnu-tickets/internal/platform/httpx"
 	appmiddleware "hnu-tickets/internal/platform/middleware"

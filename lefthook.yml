@@ -1,0 +1,36 @@
+# Git hooks. Install once per clone with `make hooks`.
+lefthook: go tool -modfile=tools/go.mod lefthook
+
+# Jobs run in order: fmt and swagger stage the files they rewrite, and
+# concurrent `git add` calls would race on the index lock.
+pre-commit:
+  jobs:
+    - name: fmt
+      glob: "*.go"
+      exclude: ["docs/**"]
+      run: go tool -modfile=tools/go.mod golangci-lint fmt {staged_files}
+      stage_fixed: true
+
+    - name: swagger
+      glob: "*.go"
+      exclude: ["docs/**"]
+      run: go run ./cmd/swagger && git add docs
+
+    - name: lint
+      glob: "*.go"
+      run: go tool -modfile=tools/go.mod golangci-lint run
+
+    - name: tidy
+      glob: "{go.mod,go.sum,tools/go.mod,tools/go.sum}"
+      run: go mod tidy -diff && (cd tools && go mod tidy -diff)
+
+    # The test cache keeps this fast: only packages affected by the change rerun.
+    - name: test
+      glob: "{*.go,go.mod,go.sum}"
+      run: go test ./...
+
+# The race detector is too slow for every commit.
+pre-push:
+  jobs:
+    - name: test-race
+      run: go test -race ./...

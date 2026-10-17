@@ -17,11 +17,6 @@ const docTemplate = `{
     "paths": {
         "/analytics/categories": {
             "get": {
-                "security": [
-                    {
-                        "BearerAuth": []
-                    }
-                ],
                 "description": "ADMIN only.",
                 "produces": [
                     "application/json"
@@ -74,16 +69,16 @@ const docTemplate = `{
                             "$ref": "#/definitions/httpx.ErrorEnvelope"
                         }
                     }
-                }
-            }
-        },
-        "/analytics/overview": {
-            "get": {
+                },
                 "security": [
                     {
                         "BearerAuth": []
                     }
-                ],
+                ]
+            }
+        },
+        "/analytics/overview": {
+            "get": {
                 "description": "ADMIN only.",
                 "produces": [
                     "application/json"
@@ -133,16 +128,16 @@ const docTemplate = `{
                             "$ref": "#/definitions/httpx.ErrorEnvelope"
                         }
                     }
-                }
-            }
-        },
-        "/analytics/priorities": {
-            "get": {
+                },
                 "security": [
                     {
                         "BearerAuth": []
                     }
-                ],
+                ]
+            }
+        },
+        "/analytics/priorities": {
+            "get": {
                 "description": "ADMIN only.",
                 "produces": [
                     "application/json"
@@ -195,16 +190,16 @@ const docTemplate = `{
                             "$ref": "#/definitions/httpx.ErrorEnvelope"
                         }
                     }
-                }
-            }
-        },
-        "/analytics/specialists": {
-            "get": {
+                },
                 "security": [
                     {
                         "BearerAuth": []
                     }
-                ],
+                ]
+            }
+        },
+        "/analytics/specialists": {
+            "get": {
                 "description": "ADMIN only.",
                 "produces": [
                     "application/json"
@@ -257,16 +252,16 @@ const docTemplate = `{
                             "$ref": "#/definitions/httpx.ErrorEnvelope"
                         }
                     }
-                }
-            }
-        },
-        "/analytics/statuses": {
-            "get": {
+                },
                 "security": [
                     {
                         "BearerAuth": []
                     }
-                ],
+                ]
+            }
+        },
+        "/analytics/statuses": {
+            "get": {
                 "description": "ADMIN only.",
                 "produces": [
                     "application/json"
@@ -319,7 +314,12 @@ const docTemplate = `{
                             "$ref": "#/definitions/httpx.ErrorEnvelope"
                         }
                     }
-                }
+                },
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ]
             }
         },
         "/auth/login": {
@@ -369,11 +369,6 @@ const docTemplate = `{
         },
         "/auth/me": {
             "get": {
-                "security": [
-                    {
-                        "BearerAuth": []
-                    }
-                ],
                 "produces": [
                     "application/json"
                 ],
@@ -400,7 +395,12 @@ const docTemplate = `{
                             "$ref": "#/definitions/httpx.ErrorEnvelope"
                         }
                     }
-                }
+                },
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ]
             }
         },
         "/auth/register": {
@@ -451,11 +451,6 @@ const docTemplate = `{
         },
         "/categories": {
             "get": {
-                "security": [
-                    {
-                        "BearerAuth": []
-                    }
-                ],
                 "produces": [
                     "application/json"
                 ],
@@ -479,14 +474,14 @@ const docTemplate = `{
                             "$ref": "#/definitions/httpx.ErrorEnvelope"
                         }
                     }
-                }
-            },
-            "post": {
+                },
                 "security": [
                     {
                         "BearerAuth": []
                     }
-                ],
+                ]
+            },
+            "post": {
                 "description": "ADMIN only.",
                 "consumes": [
                     "application/json"
@@ -540,16 +535,16 @@ const docTemplate = `{
                             "$ref": "#/definitions/httpx.ErrorEnvelope"
                         }
                     }
-                }
-            }
-        },
-        "/categories/{id}": {
-            "delete": {
+                },
                 "security": [
                     {
                         "BearerAuth": []
                     }
-                ],
+                ]
+            }
+        },
+        "/categories/{id}": {
+            "delete": {
                 "description": "ADMIN only. Categories still referenced by tickets cannot be deleted.",
                 "tags": [
                     "Categories"
@@ -599,14 +594,14 @@ const docTemplate = `{
                             "$ref": "#/definitions/httpx.ErrorEnvelope"
                         }
                     }
-                }
-            },
-            "patch": {
+                },
                 "security": [
                     {
                         "BearerAuth": []
                     }
-                ],
+                ]
+            },
+            "patch": {
                 "description": "ADMIN only.",
                 "consumes": [
                     "application/json"
@@ -674,16 +669,16 @@ const docTemplate = `{
                             "$ref": "#/definitions/httpx.ErrorEnvelope"
                         }
                     }
-                }
-            }
-        },
-        "/tickets": {
-            "get": {
+                },
                 "security": [
                     {
                         "BearerAuth": []
                     }
-                ],
+                ]
+            }
+        },
+        "/tickets": {
+            "get": {
                 "description": "USER sees own tickets, SPECIALIST sees assigned tickets, ADMIN sees all.",
                 "produces": [
                     "application/json"
@@ -819,14 +814,14 @@ const docTemplate = `{
                             "$ref": "#/definitions/httpx.ErrorEnvelope"
                         }
                     }
-                }
-            },
-            "post": {
+                },
                 "security": [
                     {
                         "BearerAuth": []
                     }
-                ],
+                ]
+            },
+            "post": {
                 "description": "USER only. The backend sets the creator, NEW status and timestamps.",
                 "consumes": [
                     "application/json"
@@ -874,16 +869,16 @@ const docTemplate = `{
                             "$ref": "#/definitions/httpx.ErrorEnvelope"
                         }
                     }
-                }
-            }
-        },
-        "/tickets/{id}": {
-            "get": {
+                },
                 "security": [
                     {
                         "BearerAuth": []
                     }
-                ],
+                ]
+            }
+        },
+        "/tickets/{id}": {
+            "get": {
                 "description": "USER sees own tickets, SPECIALIST sees assigned tickets, ADMIN sees all.",
                 "produces": [
                     "application/json"
@@ -933,14 +928,14 @@ const docTemplate = `{
                             "$ref": "#/definitions/httpx.ErrorEnvelope"
                         }
                     }
-                }
-            },
-            "patch": {
+                },
                 "security": [
                     {
                         "BearerAuth": []
                     }
-                ],
+                ]
+            },
+            "patch": {
                 "description": "The creator may edit while the ticket is NEW. ADMIN may edit at any time.",
                 "consumes": [
                     "application/json"
@@ -1002,16 +997,16 @@ const docTemplate = `{
                             "$ref": "#/definitions/httpx.ErrorEnvelope"
                         }
                     }
-                }
-            }
-        },
-        "/tickets/{id}/assign": {
-            "patch": {
+                },
                 "security": [
                     {
                         "BearerAuth": []
                     }
-                ],
+                ]
+            }
+        },
+        "/tickets/{id}/assign": {
+            "patch": {
                 "description": "ADMIN only. A NEW ticket also moves to ASSIGNED.",
                 "consumes": [
                     "application/json"
@@ -1079,16 +1074,16 @@ const docTemplate = `{
                             "$ref": "#/definitions/httpx.ErrorEnvelope"
                         }
                     }
-                }
-            }
-        },
-        "/tickets/{id}/comments": {
-            "get": {
+                },
                 "security": [
                     {
                         "BearerAuth": []
                     }
-                ],
+                ]
+            }
+        },
+        "/tickets/{id}/comments": {
+            "get": {
                 "produces": [
                     "application/json"
                 ],
@@ -1140,14 +1135,14 @@ const docTemplate = `{
                             "$ref": "#/definitions/httpx.ErrorEnvelope"
                         }
                     }
-                }
-            },
-            "post": {
+                },
                 "security": [
                     {
                         "BearerAuth": []
                     }
-                ],
+                ]
+            },
+            "post": {
                 "consumes": [
                     "application/json"
                 ],
@@ -1208,16 +1203,16 @@ const docTemplate = `{
                             "$ref": "#/definitions/httpx.ErrorEnvelope"
                         }
                     }
-                }
-            }
-        },
-        "/tickets/{id}/history": {
-            "get": {
+                },
                 "security": [
                     {
                         "BearerAuth": []
                     }
-                ],
+                ]
+            }
+        },
+        "/tickets/{id}/history": {
+            "get": {
                 "produces": [
                     "application/json"
                 ],
@@ -1269,16 +1264,16 @@ const docTemplate = `{
                             "$ref": "#/definitions/httpx.ErrorEnvelope"
                         }
                     }
-                }
-            }
-        },
-        "/tickets/{id}/status": {
-            "patch": {
+                },
                 "security": [
                     {
                         "BearerAuth": []
                     }
-                ],
+                ]
+            }
+        },
+        "/tickets/{id}/status": {
+            "patch": {
                 "description": "The transition is validated against the ticket state machine and the actor role.",
                 "consumes": [
                     "application/json"
@@ -1346,16 +1341,16 @@ const docTemplate = `{
                             "$ref": "#/definitions/httpx.ErrorEnvelope"
                         }
                     }
-                }
-            }
-        },
-        "/users": {
-            "get": {
+                },
                 "security": [
                     {
                         "BearerAuth": []
                     }
-                ],
+                ]
+            }
+        },
+        "/users": {
+            "get": {
                 "description": "ADMIN only.",
                 "produces": [
                     "application/json"
@@ -1386,16 +1381,16 @@ const docTemplate = `{
                             "$ref": "#/definitions/httpx.ErrorEnvelope"
                         }
                     }
-                }
-            }
-        },
-        "/users/{id}": {
-            "get": {
+                },
                 "security": [
                     {
                         "BearerAuth": []
                     }
-                ],
+                ]
+            }
+        },
+        "/users/{id}": {
+            "get": {
                 "description": "ADMIN only.",
                 "produces": [
                     "application/json"
@@ -1445,14 +1440,14 @@ const docTemplate = `{
                             "$ref": "#/definitions/httpx.ErrorEnvelope"
                         }
                     }
-                }
-            },
-            "patch": {
+                },
                 "security": [
                     {
                         "BearerAuth": []
                     }
-                ],
+                ]
+            },
+            "patch": {
                 "description": "ADMIN only.",
                 "consumes": [
                     "application/json"
@@ -1520,16 +1515,16 @@ const docTemplate = `{
                             "$ref": "#/definitions/httpx.ErrorEnvelope"
                         }
                     }
-                }
-            }
-        },
-        "/users/{id}/role": {
-            "patch": {
+                },
                 "security": [
                     {
                         "BearerAuth": []
                     }
-                ],
+                ]
+            }
+        },
+        "/users/{id}/role": {
+            "patch": {
                 "description": "ADMIN only.",
                 "consumes": [
                     "application/json"
@@ -1585,7 +1580,12 @@ const docTemplate = `{
                             "$ref": "#/definitions/httpx.ErrorEnvelope"
                         }
                     }
-                }
+                },
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ]
             }
         }
     },

@@ -2,8 +2,7 @@ package comments
 
 import (
 	"context"
-
-	"github.com/google/uuid"
+	"uuid"
 )
 
 type Repository interface {

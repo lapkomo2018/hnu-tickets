@@ -4,8 +4,7 @@ import (
 	"net/http"
 	"strconv"
 	"time"
-
-	"github.com/google/uuid"
+	"uuid"
 
 	"hnu-tickets/internal/platform/httpx"
 	appmiddleware "hnu-tickets/internal/platform/middleware"
@@ -156,7 +155,7 @@ func (h *Handler) Assign(w http.ResponseWriter, r *http.Request) error {
 	if err := httpx.DecodeJSON(w, r, &request); err != nil {
 		return err
 	}
-	if request.SpecialistID == uuid.Nil {
+	if request.SpecialistID == uuid.Nil() {
 		return httpx.NewError(http.StatusBadRequest, httpx.CodeInvalidSpecialist, "specialistId is required")
 	}
 	record, err := h.service.Assign(r.Context(), actor, id, request.SpecialistID)
@@ -198,11 +197,11 @@ func (h *Handler) ChangeStatus(w http.ResponseWriter, r *http.Request) error {
 func requestContext(r *http.Request) (uuid.UUID, appmiddleware.Principal, error) {
 	id, err := httpx.UUIDParam(r, "id")
 	if err != nil {
-		return uuid.Nil, appmiddleware.Principal{}, err
+		return uuid.Nil(), appmiddleware.Principal{}, err
 	}
 	actor, err := appmiddleware.PrincipalFromContext(r.Context())
 	if err != nil {
-		return uuid.Nil, appmiddleware.Principal{}, err
+		return uuid.Nil(), appmiddleware.Principal{}, err
 	}
 	return id, actor, nil
 }

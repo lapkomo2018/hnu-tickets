@@ -2,8 +2,7 @@ package users
 
 import (
 	"context"
-
-	"github.com/google/uuid"
+	"uuid"
 )
 
 type Repository interface {

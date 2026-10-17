@@ -2,8 +2,7 @@ package history
 
 import (
 	"context"
-
-	"github.com/google/uuid"
+	"uuid"
 
 	appmiddleware "hnu-tickets/internal/platform/middleware"
 )

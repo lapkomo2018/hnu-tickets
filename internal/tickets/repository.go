@@ -2,8 +2,7 @@ package tickets
 
 import (
 	"context"
-
-	"github.com/google/uuid"
+	"uuid"
 )
 
 type UserSummary struct {

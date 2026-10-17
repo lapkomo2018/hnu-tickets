@@ -3,8 +3,8 @@ package auth
 import (
 	"testing"
 	"time"
+	"uuid"
 
-	"github.com/google/uuid"
 	"github.com/stretchr/testify/require"
 )
 
