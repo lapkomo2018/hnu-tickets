@@ -1,6 +1,8 @@
-# Information security requirements
+# Security requirements
 
-Baseline: source review of commit `d917d21e413380db4947556fc3661657a5636dab`, 2026-10-17. This is a requirements and gap assessment for laboratory No. 1, not a penetration-test result or evidence of production readiness.
+Reference implementation: `00c84f2c7daa020f50fd16f2857a240ffc7a92bd`, reviewed 2026-10-17.
+
+[Security policy](security_policy.md) defines mandatory controls; [Privacy policy](privacy_policy.md) defines data handling; [Threat model](threat_model.md) identifies the relevant STRIDE scenarios. Requirements and acceptance criteria below are distinct from the observed implementation status.
 
 ## Assets and trust boundaries
 
@@ -41,6 +43,7 @@ Requests cross the untrusted client boundary before authentication, validation a
 | SEC-R07 | Rate-limit authentication and protect resources from abuse; keep credentials out of logs | HTTP timeouts/body bounds and metadata logs exist; authentication throttling and explicit long-password validation are pending (G-05) |
 | SEC-R08 | Retain restricted backups, restore them in isolation and document recovery results | Backup/restore procedure below is proposed; no successful restoration is asserted (G-08) |
 | SEC-R09 | Review changes, run lint/tests/build and inspect dependencies for known vulnerabilities | CI covers lint, generated specification, test and build; dependency vulnerability scanning is not configured (G-09) |
+| SEC-R10 | Minimize personal data, restrict its disclosure, enforce documented retention and controlled removal across current data/history/backups | Safe DTOs and ticket visibility exist; automated retention, account/ticket removal and restore-time removal replay are not implemented (G-10) |
 
 ## Implementation gaps
 
@@ -55,8 +58,9 @@ Priorities below are proposed remediation order, not measured severity scores. T
 | G-05 | Medium | Router has no login/register throttling; [`auth/service.go`](../internal/auth/service.go) validates only a minimum password length, while bcrypt hashing has a byte limit | Add bounded throttling and explicit user-facing validation compatible with bcrypt's 72-byte input maximum; verify multibyte passwords and abuse/error behavior |
 | G-06 | Functional | FR-06 requires a least-active-workload suggestion for confirmation. [`analytics/postgres.go`](../internal/analytics/postgres.go) reports workloads, but no recommendation service/route exists | Implement a deterministic recommendation with a tie rule and explicit admin confirmation, or formally revise FR-06. Do not describe analytics alone as the completed recommendation |
 | G-07 | Deployment | [`main.go`](../cmd/api/main.go) starts plain HTTP; database configuration defaults `sslmode` to `disable`. Presence of a secret is checked, but secret strength/rotation is not enforced | Configure HTTPS, verified TLS for remote DB, private network access and independent random secrets; record deployment checks before network use |
-| G-08 | Operational | No verified backup/restore outcome accompanies the reviewed repository documentation | Execute and record the isolated restoration procedure below; agree retention/frequency with the operator |
+| G-08 | Operational | Backup scheduling and a successful isolated restore are not established by the deployment configuration | Execute and record the isolated restoration procedure below; agree retention/frequency with the operator |
 | G-09 | Process | Current CI has no dependency-vulnerability scan | Add a reproducible vulnerability scan and a process for reviewing/remediating findings; record its actual output |
+| G-10 | Privacy | No account/ticket-delete API or retention job; history and backups may retain removed text | Implement controlled purge/anonymization respecting foreign keys, retention and recorded removal after restore; verify SEC-11 |
 
 ## Handling data, logs and secrets
 
@@ -66,7 +70,7 @@ Application request logs contain method, path, status, duration and request ID. 
 
 If a secret is exposed, replace it, invalidate affected sessions as applicable, review access logs and remove the exposed value from accessible artifacts. Removing a secret from the latest Git file does not remove earlier versions. JWT signing-key replacement invalidates existing tokens and must be coordinated with clients.
 
-## Proposed backup and recovery procedure
+## Backup and recovery procedure
 
 The operator must agree backup frequency, retention and acceptable data loss before deployment; no recovery-time guarantee is set for the educational environment.
 
@@ -76,7 +80,7 @@ The operator must agree backup frequency, retention and acceptable data loss bef
 4. Verify schema/migrations, account/ticket/comment/history counts, foreign-key consistency and a sample of authorized ticket reads. Record expected/actual results and restoration duration.
 5. For a real incident, stop writes, preserve incident evidence, select a verified backup, restore into a clean database and point the service at it after checks. Rotate compromised secrets and record any data-loss interval before reopening access.
 
-This is a procedure to execute, not a claim that backups are already scheduled or recovery has passed.
+Retention and removal rules are defined in [Privacy policy](privacy_policy.md#retention-schedule). After restoring a backup, reapply recorded removals before reopening access.
 
 ## Verification scenarios
 
@@ -94,5 +98,21 @@ These are acceptance scenarios, not test execution results. Run on isolated synt
 | SEC-08 Audit privileges | Confirm no history edit/delete API exists; try UPDATE/DELETE using the deployment runtime database identity. Required database denial must be verified after G-04 |
 | SEC-09 Recovery | Restart after committed writes, then restore a backup in isolation and compare rows/relationships and authorized reads; record results rather than assuming success |
 | SEC-10 Deployment | Verify HTTPS and DB certificate checking, restricted DB/log/backup access, secret handling and vulnerability-scan output under the actual deployment configuration |
+| SEC-11 Privacy lifecycle | Confirm DTOs/logs omit secrets, select records older than the configured retention period, verify restricted purge/anonymization and foreign-key consistency, then restore an older copy and reapply recorded removals before allowing access |
 
-Resolve gaps through reviewed implementation changes with regression coverage. This documentation change does not modify application behavior.
+## Acceptance and threat traceability
+
+| Requirement | Threats | Acceptance evidence |
+| --- | --- | --- |
+| SEC-R01 | TM-01, TM-22 | SEC-01/SEC-07: invalid credentials, signatures and expired tokens fail; hashes/secrets are absent from responses |
+| SEC-R02 | TM-05–TM-07 | SEC-02/SEC-04/SEC-05: role/object/workflow violations leave data unchanged |
+| SEC-R03 | TM-01, TM-06 | SEC-03: old privileged sessions stop working after demotion; copied tokens follow the defined invalidation policy |
+| SEC-R04 | TM-03, TM-11, TM-17, TM-19, TM-20, TM-22–TM-24 | SEC-10: protected channels, credential access and network restrictions are verified |
+| SEC-R05 | TM-07, TM-14 | SEC-07: malformed/boundary input is rejected without internal data disclosure |
+| SEC-R06 | TM-02, TM-04, TM-05, TM-08, TM-10, TM-13, TM-21, TM-23, TM-25 | SEC-06/SEC-08: rollback, privileged-operation evidence and denied runtime history modification |
+| SEC-R07 | TM-09, TM-12, TM-15 | SEC-07/SEC-10: bounded authentication/resource behavior and operational limits |
+| SEC-R08 | TM-04, TM-12, TM-16–TM-18, TM-23, TM-24 | SEC-09: isolated recovery with schema, relationship and data checks |
+| SEC-R09 | Development process; TM-03, TM-22 | SEC-10: reviewed build configuration and recorded dependency scan |
+| SEC-R10 | TM-07, TM-11, TM-14–TM-17, TM-21, TM-25 | SEC-11: data minimization, retention, removal and removal replay after restore |
+
+Record the tested commit, configuration, dataset, expected and actual outcome. Close implementation gaps only after the corresponding control and regression checks are complete.

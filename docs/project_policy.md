@@ -2,17 +2,17 @@
 
 | Field | Value |
 | --- | --- |
-| Version | 1.0.0 |
-| Status | Proposed for adoption through this pull request |
+| Version | 1.1.0 |
+| Scope of rules | Development and maintenance |
 | Updated | 2026-10-17 |
 | Owner | Repository maintainer, M. O. Lapko |
 | Scope | Server code, tests, migrations, configuration and documentation in this repository |
 
-This policy defines rules for changes to HNU Tickets. It adapts the course example to Go and the existing feature-based modular monolith. It does not assert that every historical implementation already satisfies every rule. Known gaps are documented in [Security](security.md).
+This policy defines development and maintenance rules for the Go modular monolith. [Security policy](security_policy.md) specifies protection controls, [Privacy policy](privacy_policy.md) defines data handling and [Security requirements](security.md) records implementation gaps.
 
 ## Change control
 
-Policy changes must be explicit, reviewed by the maintainer and accompanied by a version increment and an explanation of affected rules. Subsequent policy changes use a separate `[POLICY]` commit. Initial adoption belongs to the `[INIT]` documentation baseline for laboratory No. 1. A feature change must not silently weaken this policy; a necessary exception must name its scope, reason and follow-up in the pull request and relevant documentation.
+Policy changes must be explicit, reviewed by the maintainer and accompanied by a version increment and an explanation of affected rules. Subsequent policy changes use a separate `[POLICY]` commit. A feature change must not silently weaken this policy; a necessary exception must name its scope, reason and follow-up in the pull request and relevant documentation.
 
 ## Technology and structure
 
