@@ -4,9 +4,7 @@ HNU Tickets is a REST API for managing technical support requests. It supports r
 
 ## Documentation
 
-Start with the [documentation index](docs/README.md). It includes the [system specification](docs/specification.md), [project policy](docs/project_policy.md), [business logic](docs/business_logic.md), and [security requirements and implementation gaps](docs/security.md), prepared for Data and Information Security laboratory No. 1 using the existing Software Construction project.
-
-The specification preserves FR-01–FR-12. Intended requirements and source-observed implementation gaps are documented separately; this baseline does not claim production readiness or completed runtime acceptance.
+Start with the [documentation index](docs/README.md): [specification](docs/specification.md), [business logic](docs/business_logic.md), [security policy](docs/security_policy.md), [privacy policy](docs/privacy_policy.md), [threat model](docs/threat_model.md), and [security requirements](docs/security.md).
 
 ## Architecture
 

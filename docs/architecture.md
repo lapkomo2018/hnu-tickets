@@ -40,7 +40,7 @@ The module and invariant map is in [Business logic](business_logic.md).
 - PostgreSQL adapters implement repositories with parameterized SQL through `pgx`. SQL identifiers for sorting/grouping come from controlled choices.
 - The composition root constructs dependencies explicitly; no framework container is required.
 
-An existing coupling is that services and ticket policies use `Principal` from `internal/platform/middleware`. The type is shared without requiring an HTTP request, but its package location couples the application to a transport-named package. Moving the actor type to a neutral package is a possible later cleanup, not part of this documentation change.
+An existing coupling is that services and ticket policies use `Principal` from `internal/platform/middleware`. The type is shared without requiring an HTTP request, but its package location couples the application to a transport-named package. Moving the actor type to a neutral package is a possible later cleanup.
 
 ## Error boundaries
 
@@ -74,7 +74,7 @@ History is append-only through the API, not immutable against privileged databas
 
 The development Compose workflow runs the API, PostgreSQL and migration step; PostgreSQL data requires persistent storage. Local setup and required configuration are in the root [README](../README.md). The HTTP process uses header/read/write/idle timeouts, graceful shutdown and health/readiness routes.
 
-For network deployment, put HTTPS termination at a reverse proxy or equivalent trusted ingress, restrict direct API/database exposure and configure verified TLS for a remote database. These are deployment requirements, not controls provisioned by the current local setup. Keep live credentials outside Git and backups separately protected. Proposed recovery steps and outstanding verification are in [Security](security.md#proposed-backup-and-recovery-procedure).
+For network deployment, put HTTPS termination at a reverse proxy or equivalent trusted ingress, restrict direct API/database exposure and configure verified TLS for a remote database. These are deployment requirements, not controls provisioned by the current local setup. Keep live credentials outside Git and backups separately protected. Proposed recovery steps and outstanding verification are in [Security](security.md#backup-and-recovery-procedure).
 
 ## Decisions and limitations
 
@@ -86,5 +86,5 @@ For network deployment, put HTTPS termination at a reverse proxy or equivalent t
 | JWT with token-carried role | Simple request authentication, with stale-authorization/revocation limitations tracked as G-01 |
 | Relational aggregates for analytics | No extra reporting pipeline; large-period report performance must be measured |
 
-The reviewed baseline and source materials are listed in the [documentation index](README.md). This architecture description does not claim that unresolved security requirements are already implemented.
+The [threat model](threat_model.md) defines data flows and trust boundaries for this architecture. [Security requirements](security.md) records controls and remaining implementation gaps.
 
