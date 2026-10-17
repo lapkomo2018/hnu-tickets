@@ -18,6 +18,11 @@ func canView(actor appmiddleware.Principal, ticket *Ticket) bool {
 	}
 }
 
+func canEdit(actor appmiddleware.Principal, ticket *Ticket) bool {
+	return users.Role(actor.Role) == users.RoleAdmin ||
+		(users.Role(actor.Role) == users.RoleUser && ticket.CreatedBy == actor.UserID && ticket.Status == StatusNew)
+}
+
 func authorizeStatusChange(actor appmiddleware.Principal, ticket *Ticket, next Status) error {
 	role := users.Role(actor.Role)
 	if role == users.RoleAdmin {

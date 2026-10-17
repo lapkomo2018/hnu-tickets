@@ -105,8 +105,7 @@ func (s *Service) Update(ctx context.Context, actor appmiddleware.Principal, id 
 		if err != nil {
 			return err
 		}
-		isAdmin := users.Role(actor.Role) == users.RoleAdmin
-		if !isAdmin && (ticket.CreatedBy != actor.UserID || ticket.Status != StatusNew) {
+		if !canEdit(actor, ticket) {
 			return ErrTicketCannotBeEdited
 		}
 		entries, err := applyUpdate(ticket, actor.UserID, input, s.now().UTC())

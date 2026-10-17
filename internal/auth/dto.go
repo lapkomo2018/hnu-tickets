@@ -5,7 +5,7 @@ import "hnu-tickets/internal/users"
 type RegisterRequest struct {
 	Name     string `json:"name" validate:"required" minLength:"2" maxLength:"100" example:"Maksym Lapko"`
 	Email    string `json:"email" validate:"required" format:"email" example:"user@example.com"`
-	Password string `json:"password" validate:"required" format:"password" minLength:"8" example:"password123"`
+	Password string `json:"password" validate:"required" format:"password" minLength:"8" maxLength:"72" example:"password123"` // At most 72 UTF-8 bytes, not characters.
 }
 
 type LoginRequest struct {

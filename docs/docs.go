@@ -363,8 +363,38 @@ const docTemplate = `{
                         "schema": {
                             "$ref": "#/definitions/httpx.ErrorEnvelope"
                         }
+                    },
+                    "429": {
+                        "description": "Too Many Requests",
+                        "schema": {
+                            "$ref": "#/definitions/httpx.ErrorEnvelope"
+                        }
                     }
                 }
+            }
+        },
+        "/auth/logout": {
+            "post": {
+                "tags": [
+                    "Auth"
+                ],
+                "summary": "Revoke the current access token",
+                "responses": {
+                    "204": {
+                        "description": "No Content"
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/httpx.ErrorEnvelope"
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ]
             }
         },
         "/auth/me": {
@@ -442,6 +472,12 @@ const docTemplate = `{
                     },
                     "409": {
                         "description": "Conflict",
+                        "schema": {
+                            "$ref": "#/definitions/httpx.ErrorEnvelope"
+                        }
+                    },
+                    "429": {
+                        "description": "Too Many Requests",
                         "schema": {
                             "$ref": "#/definitions/httpx.ErrorEnvelope"
                         }
@@ -1693,8 +1729,10 @@ const docTemplate = `{
                     "example": "Maksym Lapko"
                 },
                 "password": {
+                    "description": "At most 72 UTF-8 bytes, not characters.",
                     "type": "string",
                     "format": "password",
+                    "maxLength": 72,
                     "minLength": 8,
                     "example": "password123"
                 }

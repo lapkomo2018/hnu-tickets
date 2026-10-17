@@ -12,9 +12,13 @@ import (
 	"hnu-tickets/internal/users"
 )
 
+// A public dummy hash equalizes password work for unknown accounts.
+const dummyPasswordHash = "$2b$12$P8Sa9EaN/QNferpWlJ/gI.eZZdN7c6sH7SgzgqcovOiODAJWpHvbq"
+
 type Service struct {
-	users  users.Repository
-	tokens *TokenManager
+	users       users.Repository
+	tokens      *TokenManager
+	revocations Revocations
 }
 
 type RegisterInput struct {
@@ -33,8 +37,8 @@ type Session struct {
 	User        users.User
 }
 
-func NewService(repository users.Repository, tokens *TokenManager) *Service {
-	return &Service{users: repository, tokens: tokens}
+func NewService(repository users.Repository, tokens *TokenManager, revocations Revocations) *Service {
+	return &Service{users: repository, tokens: tokens, revocations: revocations}
 }
 
 func (s *Service) Register(ctx context.Context, input RegisterInput) (*Session, error) {
@@ -54,9 +58,13 @@ func (s *Service) Register(ctx context.Context, input RegisterInput) (*Session, 
 }
 
 func (s *Service) Login(ctx context.Context, input LoginInput) (*Session, error) {
-	user, err := s.users.GetByEmail(ctx, strings.TrimSpace(input.Email))
+	if !validPassword(input.Password) {
+		return nil, invalidCredentials()
+	}
+	user, err := s.users.GetByEmail(ctx, strings.ToLower(strings.TrimSpace(input.Email)))
 	if err != nil {
 		if errors.Is(err, users.ErrUserNotFound) {
+			_ = checkPassword(dummyPasswordHash, input.Password)
 			return nil, invalidCredentials()
 		}
 		return nil, err
@@ -89,7 +97,7 @@ func validateCredentials(name, email, password string) (string, string, error) {
 	if err != nil || address.Address != email {
 		return "", "", users.ErrInvalidEmail
 	}
-	if utf8.RuneCountInString(password) < 8 {
+	if !validPassword(password) {
 		return "", "", ErrInvalidPassword
 	}
 	return name, email, nil

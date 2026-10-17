@@ -1,0 +1,106 @@
+{
+  "measured_at_utc": "2026-10-17T19:57:25.267615+00:00",
+  "environment": {
+    "platform": "Linux-6.18.55-x86_64-with-glibc2.39",
+    "python": "3.12.14",
+    "bcrypt": "5.0.0",
+    "legacy_library": "libcrypt.so.1"
+  },
+  "seed": "2026_ІПЗс-24-1_Лапко_Максим_варіант:7_",
+  "seed_characters": 38,
+  "seed_utf8_bytes": 60,
+  "padding_underscores": 12,
+  "random_suffix": "wrXhruUuYb",
+  "variants": [
+    {
+      "id": 1,
+      "value": "2026_ІПЗс-24-1_Лапко_Максим_варіант:7_____________",
+      "utf8_bytes": 72,
+      "hash": "$2b$12$6vB.iEsZGWn1AZTgIKiUbO8r21epm9Zlk5WY/uilpbYLobKYoAp96",
+      "strict_python_bcrypt": "accepted"
+    },
+    {
+      "id": 2,
+      "value": "2026_ІПЗс-24-1_Лапко_Максим_варіант:7_____________1",
+      "utf8_bytes": 73,
+      "hash": "$2b$12$w15NXnD4pH811uJjGmAuE.e74.w4x7nc..cPR/1UyBmZtQHQNS4Z2",
+      "strict_python_bcrypt": "rejected: password exceeds 72 bytes"
+    },
+    {
+      "id": 3,
+      "value": "2026_ІПЗс-24-1_Лапко_Максим_варіант:7_____________wrXhruUuYb",
+      "utf8_bytes": 82,
+      "hash": "$2b$12$fBuz8g0gnq0g3rodq9ei1eHBX.hxY2QUCNksnbnGn3DtiAQEDxiQ6",
+      "strict_python_bcrypt": "rejected: password exceeds 72 bytes"
+    },
+    {
+      "id": 4,
+      "value": "2026_ІПЗс-24-1_Лапко_Максим_варіант:7____________",
+      "utf8_bytes": 71,
+      "hash": "$2b$12$nfrVVGKvcyMuItyGonwBn.q4T939efgOR.DzqQ9ttezp2OxY0O66q",
+      "strict_python_bcrypt": "accepted"
+    }
+  ],
+  "verification_matrix_hash_rows_string_columns": [
+    [
+      true,
+      true,
+      true,
+      false
+    ],
+    [
+      true,
+      true,
+      true,
+      false
+    ],
+    [
+      true,
+      true,
+      true,
+      false
+    ],
+    [
+      false,
+      false,
+      false,
+      true
+    ]
+  ],
+  "dictionary": [
+    "pass: Бондар",
+    "pass: Мельник",
+    "pass: Шевченко",
+    "pass: Коваленко",
+    "pass: Бойко",
+    "pass: Ткаченко",
+    "pass: Кравченко",
+    "pass: Олійник",
+    "pass: Шевчук",
+    "pass: Поліщук",
+    "pass: Савченко",
+    "pass: Козак",
+    "pass: Мороз",
+    "pass: Петренко",
+    "pass: Лисенко",
+    "pass: Ткачук",
+    "pass: Кравчук",
+    "pass: Клименко",
+    "pass: Гриценко",
+    "pass: Лапко"
+  ],
+  "password": "pass: Лапко",
+  "hash5_sha256": "aef5f54b3a371fec2e09d46047321fe96b96af760af58be561b3852f6b2488bc",
+  "hash6_bcrypt_cost12": "$2b$12$kya1MeEFjkf2qAQR0k.ZDOPLziYRNY.r2bcp1rusEQvqns.TeA6by",
+  "sha256_search": {
+    "candidate": "pass: Лапко",
+    "attempts": 20,
+    "elapsed_us": 24.216
+  },
+  "bcrypt_search": {
+    "candidate": "pass: Лапко",
+    "attempts": 20,
+    "elapsed_us": 4955842.291
+  },
+  "clock": "time.perf_counter_ns; elapsed_us = delta_ns / 1000"
+}

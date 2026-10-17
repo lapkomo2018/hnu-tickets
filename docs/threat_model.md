@@ -129,11 +129,11 @@ Trust boundaries identify where assumptions change; they are not extra process r
 | TM-02 | E1 | R | A participant denies a ticket change when actor/session evidence is insufficient. | Disputed responsibility for changes. | SEC-R06 | Medium |
 | TM-03 | E2 | S | A stolen operator identity is used to act as the authorized maintainer/operator. | Configuration and stored data. | SEC-R04, SEC-R09 | High |
 | TM-04 | E2 | R | An operator denies direct maintenance that was not recorded. | Missing accountability outside ticket history. | SEC-R06, SEC-R08 | Medium |
-| TM-05 | P1 | T | An authorized actor exploits a missing assignee/current-role condition to create an invalid workflow update. | Invalid assignment or unauthorized author edit; G-02/G-03. | SEC-R02, SEC-R06 | High |
-| TM-06 | P1 | E | A demoted account reuses an issued token carrying its previous privileged role. | Continued privileged access; G-01. | SEC-R02, SEC-R03 | High |
+| TM-05 | P1 | T | An authorized actor exploits a missing assignee/current-role condition to create an invalid workflow update. | Invalid assignment or unauthorized author edit; G-02 remains, G-03 is resolved. | SEC-R02, SEC-R06 | High |
+| TM-06 | P1 | E | A demoted account reuses an issued token carrying its previous privileged role. | Privileged access unless current-role checks are enforced; addressed by G-01 resolution. | SEC-R02, SEC-R03 | High |
 | TM-07 | P1 | I | A caller manipulates a ticket UUID or filter to obtain another participant's ticket/comments/history. | Disclosure of support content. | SEC-R02, SEC-R05, SEC-R10 | High |
 | TM-08 | P1 | R | Login, role or maintenance actions cannot be reliably reconstructed from the available audit data. | Insufficient security-event traceability; ticket history is only partial coverage. | SEC-R06 | Medium |
-| TM-09 | P1, F1 | D | Repeated authentication or expensive requests consume API capacity and block legitimate requests. | Service unavailability; missing throttling in G-05. | SEC-R07 | High |
+| TM-09 | P1, F1 | D | Repeated authentication or expensive requests consume API capacity and block legitimate requests. | Service unavailability; per-process throttling mitigates G-05. | SEC-R07 | High |
 | TM-10 | D1 | T | An overprivileged runtime/operator identity changes ticket history or records directly. | Data/audit integrity loss; G-04. | SEC-R06 | High |
 | TM-11 | D1 | I | Direct database access or a copied database volume exposes accounts, password hashes and support messages. | Confidentiality loss. | SEC-R04, SEC-R10 | High |
 | TM-12 | D1, F2, F5 | D | Connection exhaustion, blocking work or interrupted database access prevents reads/writes. | Database and dependent API outage. | SEC-R07, SEC-R08 | Medium |
@@ -157,8 +157,8 @@ High priority denotes exposure of credentials/privileged functions, bulk data lo
 
 | Area | Existing mechanism | Remaining work |
 | --- | --- | --- |
-| Identity | bcrypt and signed expiring HS256 JWTs | Effective role-change/session invalidation and bounded authentication attempts; G-01/G-05 |
-| Object access | Scoped lists and ticket access checks reused by comments/history | Negative regression checks and explicit current-role enforcement for author edits; G-03 |
+| Identity | bcrypt and signed expiring HS256 JWTs | Current-role lookup, persistent per-token logout and bounded peer limits; distributed limits require ingress configuration |
+| Object access | Scoped lists and ticket access checks reused by comments/history | Author edits explicitly check current USER role; negative role/access regression checks cover G-03 |
 | Workflow integrity | Domain transition matrix, transactions and ticket row locks | Assignee precondition on generic status changes; G-02 |
 | Data access | Parameterized SQL, foreign keys and allowed-value constraints | Separate runtime/migration privileges and history protection; G-04 |
 | Transport/secrets | Required secret configuration and CORS allowlist | HTTPS, verified remote DB TLS, secret rotation and restricted ports; G-07 |

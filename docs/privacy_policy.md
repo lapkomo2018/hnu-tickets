@@ -22,7 +22,8 @@ Do not request passwords, access tokens, private keys, financial identifiers or 
 | Ticket title, description, category, priority, author, assignee and timestamps | Requester input and authorized workflow operations | Support processing and workload visibility; `tickets` |
 | Comment content, author and time | Participants with ticket access | Discussion and clarification; `comments` |
 | Action, actor, time and old/new values | Ticket mutations | Traceability; `ticket_history`; old values may contain previous personal text |
-| Access token with user ID, role and issue/expiry times | API token issuance | Bearer authentication; token delivered to the client, not a session row in the current database |
+| Access token with user ID, role and issue/expiry times | API token issuance | Bearer authentication; token delivered to the client; only revoked token UUIDs and expiry are retained in PostgreSQL |
+| Revoked token UUID and expiry | Server logout | Block replay until expiry; `revoked_tokens`; expired entries are pruned on later logout writes |
 | Method, route, status, duration, request ID and internal error context | API operation | Diagnostics and security investigation; operator-managed logs |
 | Database backup and restoration records | Operator's backup process | Recovery; restricted storage outside the database host |
 

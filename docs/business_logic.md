@@ -16,7 +16,7 @@ The system owns support tickets, their assignment, processing, discussion and ch
 | History | Append-only ticket change records exposed for reading | Shares ticket visibility; no update/delete API |
 | Analytics | Counts, distributions, workload and resolution duration | ADMIN only; reads the relational model, not an event stream |
 
-Browser rendering, token storage and client logout belong to the separate client. Email notifications, files, shared multi-tenancy, automated ticket assignment and background queues are outside this implementation. The FR-06 suggestion is a pending confirmed-choice aid, not automatic assignment.
+Browser rendering, token storage and invocation of the logout endpoint belong to the separate client; server-side token revocation belongs to Auth. Email notifications, files, shared multi-tenancy, automated ticket assignment and background queues are outside this implementation. The FR-06 suggestion is a pending confirmed-choice aid, not automatic assignment.
 
 ## Entities and invariants
 
@@ -45,7 +45,7 @@ UUID identity and creation times are not client-editable fields. Optional assign
 
 Status changes additionally follow the matrix below. Listing always adds the actor's visibility restriction on the server. An incoming filter cannot widen it. The API has no ticket-delete operation. Field edits and comments are not currently restricted solely because a ticket is terminal; only lifecycle changes and reassignment are blocked by terminal status.
 
-The intended edit policy requires the author's current role to be USER; the existing service only checks ownership and NEW for a non-admin (G-03). Current JWT roles may also be stale (G-01).
+Author edits require the current USER role, ownership and NEW status. Middleware loads the current account role on every protected request; logout persists the current token ID in the revocation store.
 
 ## Status lifecycle
 
@@ -77,7 +77,7 @@ Entering RESOLVED sets `resolved_at`. Returning from RESOLVED to IN_PROGRESS cle
 4. The author can resume a request waiting for information and close a resolved request. A specialist can return a resolved request to work. Cancellation is available only along the matrix edges.
 5. Every ticket mutation is committed with its history entries; readers see the committed state. ADMIN can inspect aggregate analytics.
 
-Reassignment is permitted for any nonterminal ticket and normally preserves its status; NEW becomes ASSIGNED. Old/new assignee IDs are recorded. Reassignment to the same ID is not explicitly rejected and may produce another history entry. A later user-role change does not automatically reassign that person's tickets; operational reassignment and authorization freshness require attention (G-01).
+Reassignment is permitted for any nonterminal ticket and normally preserves its status; NEW becomes ASSIGNED. Old/new assignee IDs are recorded. Reassignment to the same ID is not explicitly rejected and may produce another history entry. A later user-role change does not automatically reassign that person's tickets; operational reassignment remains necessary; authorization uses the current role.
 
 ## Validation, commands and queries
 
