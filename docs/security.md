@@ -51,7 +51,7 @@ Priorities below are proposed remediation order, not measured severity scores. T
 
 | ID | Priority | Observation and evidence | Required follow-up / completion evidence |
 | --- | --- | --- | --- |
-| G-01 | Resolved | Middleware loads the current account role and rejects persistent token revocations | Covered by role-refresh/logout HTTP tests and PostgreSQL revocation integration check |
+| G-01 | Resolved | Middleware loads the current account role and rejects persistent token revocations | Covered by role-refresh/logout HTTP tests |
 | G-02 | High | [`tickets/service.go`](../internal/tickets/service.go) permits ADMIN to use `ChangeStatus`; [`tickets/domain.go`](../internal/tickets/domain.go) validates an edge but not an assignee. Thus NEW can become ASSIGNED without `Assign`. The schema does not enforce the assignee/status invariant | Restrict entry into ASSIGNED to assignment or check an existing valid assignee. Verify the generic status endpoint cannot create an unassigned ASSIGNED ticket |
 | G-03 | Resolved | Author edits require current USER role, ownership and NEW status | Covered by author-edit policy regression checks |
 | G-04 | Medium | [`ticket_history` migration](../migrations/000005_create_ticket_history.up.sql) creates an ordinary mutable table with cascading ticket deletion. API append-only behavior does not establish database-level tamper resistance | Define separate runtime/migration roles; prevent runtime UPDATE/DELETE on history and uncontrolled destructive operations. Consider external protected audit storage for stronger threat models; verify actual privileges |

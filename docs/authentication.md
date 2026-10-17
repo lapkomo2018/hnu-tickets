@@ -51,4 +51,4 @@ Forwarded headers are not trusted for identity. A reverse-proxy deployment must 
 
 Tests cover registration, duplicate email, normalized login, invalid credentials, 72-byte/multibyte boundaries, missing token claims, signature/expiry/algorithm rejection, current role changes, deleted accounts, per-token logout, independent sessions, storage failure and concurrent/rate-limited attempts. An isolated PostgreSQL test verifies persistence, idempotent revocation and expired-entry cleanup.
 
-Run `make test`, `make lint`, `go test -race ./...` and `go build ./...`. Set `TEST_DATABASE_URL` to an isolated PostgreSQL database to include the revocation integration check. Regenerate the endpoint contract with `make swagger` after API changes.
+Run `make test`, `make lint`, `go test -race ./...` and `go build ./...`. Regenerate the endpoint contract with `make swagger` after API changes.
