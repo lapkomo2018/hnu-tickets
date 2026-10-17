@@ -12,6 +12,8 @@ func setRequired(t *testing.T) {
 		t.Setenv(key, "")
 	}
 	t.Setenv("JWT_SECRET", "secret")
+	t.Setenv("DATA_ACTIVE_KEY", "test")
+	t.Setenv("DATA_KEYS", `{"test":"AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA="}`)
 	t.Setenv("POSTGRES_USER", "tickets")
 	t.Setenv("POSTGRES_PASSWORD", "tickets")
 	t.Setenv("POSTGRES_DB", "tickets")

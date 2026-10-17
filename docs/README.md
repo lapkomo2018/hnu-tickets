@@ -12,6 +12,7 @@ HNU Tickets is the server part of the **Technical Support Ticket Management Info
 | [Security policy](security_policy.md) | Mandatory development, operational and vulnerability-management controls |
 | [Privacy policy](privacy_policy.md) | Data categories, purpose, access, retention and removal |
 | [Threat model](threat_model.md) | DFD, trust boundaries, attacker capabilities and STRIDE scenarios |
+| [Cryptography](cryptography.md) | Encrypted fields, envelope format, migration and key rotation |
 | [Security requirements](security.md) | SEC-R controls, acceptance scenarios and implementation gaps |
 | [Database](database.md) | Relational model, constraints and indexes |
 | [API guide](api.md) | API conventions, permissions and workflow |

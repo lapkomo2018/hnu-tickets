@@ -9,6 +9,8 @@ import (
 	"strconv"
 	"strings"
 	"time"
+
+	"hnu-tickets/internal/platform/fieldcrypt"
 )
 
 // EnvironmentDevelopment is the environment in which the API regenerates its
@@ -21,6 +23,7 @@ type Config struct {
 	JWT      JWTConfig
 	CORS     CORSConfig
 	Admin    AdminConfig
+	DataKeys *fieldcrypt.Keyring
 }
 
 type AppConfig struct {
@@ -100,7 +103,13 @@ func Load() (Config, error) {
 		return Config{}, errors.New("ADMIN_EMAIL and ADMIN_PASSWORD must be set together")
 	}
 
+	dataKeys, err := fieldcrypt.New(os.Getenv("DATA_ACTIVE_KEY"), os.Getenv("DATA_KEYS"))
+	if err != nil {
+		return Config{}, err
+	}
+
 	return Config{
+		DataKeys: dataKeys,
 		App: AppConfig{
 			Environment: envOrDefault("APP_ENV", EnvironmentDevelopment),
 			Port:        port,

@@ -47,7 +47,7 @@ Requests cross the untrusted client boundary before authentication, validation a
 
 ## Implementation gaps
 
-Priorities below are proposed remediation order, not measured severity scores. These items describe reviewed code paths; they have not been dynamically exploited in this documentation change.
+Priorities below are proposed remediation order, not measured severity scores.
 
 | ID | Priority | Observation and evidence | Required follow-up / completion evidence |
 | --- | --- | --- | --- |
@@ -63,6 +63,8 @@ Priorities below are proposed remediation order, not measured severity scores. T
 | G-10 | Privacy | No account/ticket-delete API or retention job; history and backups may retain removed text | Implement controlled purge/anonymization respecting foreign keys, retention and recorded removal after restore; verify SEC-11 |
 
 ## Handling data, logs and secrets
+
+Ticket descriptions, comments and history values use AES-256-GCM with row/field-bound authentication. Data keys are independent from JWT signing and support offline rotation. Titles and account/operational metadata remain readable. See [Cryptography](cryptography.md) for the field scope, initial conversion and protection limits.
 
 Use synthetic ticket content for demonstrations. Support messages can contain personal information or credentials supplied accidentally; participants must avoid including secrets in tickets, comments and history. History old/new values may retain previous text, so redacting only the current ticket is insufficient.
 

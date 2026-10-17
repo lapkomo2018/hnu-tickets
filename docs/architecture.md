@@ -88,3 +88,7 @@ For network deployment, put HTTPS termination at a reverse proxy or equivalent t
 
 The [threat model](threat_model.md) defines data flows and trust boundaries for this architecture. [Security requirements](security.md) records controls and remaining implementation gaps.
 
+
+## Stored content encryption
+
+PostgreSQL adapters encrypt ticket descriptions, comments and history values with the shared AES-256-GCM service. Domain/services and API DTOs use plaintext; access checks still govern disclosure. The versioned envelope authenticates its key ID and table/row/column context. The API requires the completed data migration marker and never falls back to plaintext. See [Cryptography](cryptography.md).

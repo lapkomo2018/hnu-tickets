@@ -32,7 +32,11 @@ More detail is available in [docs/architecture.md](docs/architecture.md).
 
 ```sh
 cp .env.example .env
-docker compose up --build
+# Set DATA_KEYS to a generated key, and set JWT_SECRET in .env.
+docker compose up -d postgres
+docker compose run --rm migrate
+docker compose run --build --rm --no-deps --entrypoint /cryptodata api -mode migrate
+docker compose up -d api
 ```
 
 Compose takes every setting from `.env`; there are no credentials in `docker-compose.yml`.
@@ -44,7 +48,7 @@ The API is available at `http://localhost:8080`. Useful endpoints:
 - Swagger UI: `GET /docs/`
 - OpenAPI specification: `GET /docs/doc.json`
 
-Load demo data after the services start:
+Optional demo accounts/categories can be loaded with the command below. The current seed contains no ticket text:
 
 ```sh
 docker compose exec -T postgres psql -U tickets -d tickets < scripts/seed.sql
@@ -59,6 +63,7 @@ variables only when starting the API another way, for example from an IDE.
 ```sh
 make migrate-up
 make seed
+make crypto-migrate
 make run
 ```
 
@@ -73,13 +78,15 @@ Required environment variables:
 | `POSTGRES_PORT` | Optional. Database port, default `5432`; Compose also publishes PostgreSQL on it | `5432` |
 | `POSTGRES_SSLMODE` | Optional. libpq `sslmode`, default `disable` | `require` |
 | `JWT_SECRET` | HMAC signing secret | a long random value |
+| `DATA_ACTIVE_KEY` | ID used for new field encryption | `k1` |
+| `DATA_KEYS` | JSON object of key IDs and base64-encoded 32-byte AES keys; keep outside Git | see [Cryptography](docs/cryptography.md) |
 | `JWT_TTL` | Access token lifetime | `24h` |
 | `CORS_ALLOWED_ORIGINS` | Comma-separated browser origins | `http://localhost:5173` |
 | `ADMIN_EMAIL` | Optional. Email of the administrator created on startup | `admin@example.com` |
 | `ADMIN_PASSWORD` | Required with `ADMIN_EMAIL`, at least 8 characters | a strong password |
 | `ADMIN_NAME` | Optional. Display name of that administrator, default `Administrator` | `Administrator` |
 
-The application MUST NOT start without `POSTGRES_USER`, `POSTGRES_PASSWORD`, `POSTGRES_DB`, and `JWT_SECRET`. The API builds
+The application MUST NOT start without `POSTGRES_USER`, `POSTGRES_PASSWORD`, `POSTGRES_DB`, `JWT_SECRET`, and valid data encryption keys. Apply migration `000007` and run `make crypto-migrate` once before starting the API, including for an empty database. See [Cryptography](docs/cryptography.md) for deployment and rotation. The API builds
 the connection string from the `POSTGRES_*` variables and escapes the credentials.
 
 ## Authentication

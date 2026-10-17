@@ -66,3 +66,7 @@ The schema constrains allowed status/role/priority values but does not enforce t
 
 History has no API update/delete operation, but it is an ordinary database table. Cascading deletion and privileged SQL access mean it is not a tamper-proof ledger. Runtime/migration privilege separation and verified backup restoration remain required deployment work (G-04/G-08).
 
+
+## Encrypted text
+
+Migration `000007` adds the singleton `data_crypto_state` marker. `tickets.description`, `comments.content`, `ticket_history.old_value` and `ticket_history.new_value` retain their TEXT types but store AES-256-GCM envelopes after `cryptodata -mode migrate`. NULL history values stay NULL. UUIDs are allocated before insertion to bind ciphertext to its row. Data conversion and rotation are offline transactions; migration SQL alone does not encrypt data. See [Cryptography](cryptography.md).

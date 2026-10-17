@@ -25,6 +25,7 @@ import (
 	"hnu-tickets/internal/platform/apidocs"
 	"hnu-tickets/internal/platform/config"
 	"hnu-tickets/internal/platform/database"
+	"hnu-tickets/internal/platform/fieldcrypt"
 	"hnu-tickets/internal/platform/httpx"
 	appmiddleware "hnu-tickets/internal/platform/middleware"
 	"hnu-tickets/internal/tickets"
@@ -77,6 +78,9 @@ func run() error {
 		return err
 	}
 	defer pool.Close()
+	if err := fieldcrypt.RequireReady(startupCtx, pool); err != nil {
+		return err
+	}
 
 	if cfg.Admin.Enabled() {
 		admin := auth.RegisterInput{Name: cfg.Admin.Name, Email: cfg.Admin.Email, Password: cfg.Admin.Password}
@@ -145,14 +149,14 @@ func newRouter(pool *pgxpool.Pool, cfg config.Config, specification string) http
 	categoriesService := categories.NewService(categoriesRepository)
 	categoriesHandler := categories.NewHandler(categoriesService)
 
-	historyRepository := history.NewPostgresRepository(pool)
-	ticketsRepository := tickets.NewPostgresRepository(pool)
+	historyRepository := history.NewPostgresRepository(pool, cfg.DataKeys)
+	ticketsRepository := tickets.NewPostgresRepository(pool, cfg.DataKeys)
 	ticketsService := tickets.NewService(
 		ticketsRepository, historyRepository, usersRepository, database.NewTransactor(pool),
 	)
 	ticketsHandler := tickets.NewHandler(ticketsService)
 
-	commentsRepository := comments.NewPostgresRepository(pool)
+	commentsRepository := comments.NewPostgresRepository(pool, cfg.DataKeys)
 	commentsService := comments.NewService(commentsRepository, ticketsService)
 	commentsHandler := comments.NewHandler(commentsService)
 	historyService := history.NewService(historyRepository, ticketsService)
