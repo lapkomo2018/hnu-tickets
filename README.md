@@ -27,8 +27,11 @@ More detail is available in [docs/architecture.md](docs/architecture.md).
 ## Quick start with Docker
 
 ```sh
+cp .env.example .env
 docker compose up --build
 ```
+
+Compose takes every setting from `.env`; there are no credentials in `docker-compose.yml`.
 
 The API is available at `http://localhost:8080`. Useful endpoints:
 
@@ -45,7 +48,9 @@ docker compose exec -T postgres psql -U tickets -d tickets < scripts/seed.sql
 
 ## Local setup
 
-Copy `.env.example` to `.env`, export its variables, and run:
+Copy `.env.example` to `.env` and run the commands below. Set `POSTGRES_HOST=localhost` first: the example
+points at the Compose network. `make` loads `.env` itself; export the
+variables only when starting the API another way, for example from an IDE.
 
 ```sh
 make migrate-up
@@ -59,12 +64,27 @@ Required environment variables:
 | --- | --- | --- |
 | `APP_ENV` | Runtime environment | `development` |
 | `APP_PORT` | HTTP port | `8080` |
-| `DATABASE_URL` | PostgreSQL connection string | `postgres://tickets:tickets@localhost:5432/tickets?sslmode=disable` |
+| `POSTGRES_USER`, `POSTGRES_PASSWORD`, `POSTGRES_DB` | Database credentials; Docker Compose uses the same values for the database container | `tickets` |
+| `POSTGRES_HOST` | Optional. Database host, default `localhost`. Use `postgres` when the API runs in Docker Compose | `postgres` |
+| `POSTGRES_PORT` | Optional. Database port, default `5432`; Compose also publishes PostgreSQL on it | `5432` |
+| `POSTGRES_SSLMODE` | Optional. libpq `sslmode`, default `disable` | `require` |
 | `JWT_SECRET` | HMAC signing secret | a long random value |
 | `JWT_TTL` | Access token lifetime | `24h` |
 | `CORS_ALLOWED_ORIGINS` | Comma-separated browser origins | `http://localhost:5173` |
+| `ADMIN_EMAIL` | Optional. Email of the administrator created on startup | `admin@example.com` |
+| `ADMIN_PASSWORD` | Required with `ADMIN_EMAIL`, at least 8 characters | a strong password |
+| `ADMIN_NAME` | Optional. Display name of that administrator, default `Administrator` | `Administrator` |
 
-The application MUST NOT start without `DATABASE_URL` and `JWT_SECRET`.
+The application MUST NOT start without `POSTGRES_USER`, `POSTGRES_PASSWORD`, `POSTGRES_DB`, and `JWT_SECRET`. The API builds
+the connection string from the `POSTGRES_*` variables and escapes the credentials.
+
+## First administrator
+
+Registration always creates `USER` accounts, and only an administrator can change roles
+(`PATCH /api/v1/users/{id}/role`). To get the first administrator without seed data, set `ADMIN_EMAIL`
+and `ADMIN_PASSWORD`: on startup the API creates that account with the `ADMIN` role if no user with this
+email exists. An existing user is never modified, so the password is not reset and another account is
+never promoted. Promote further users through the role endpoint.
 
 ## Database and migrations
 

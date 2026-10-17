@@ -3,6 +3,8 @@ package config
 import (
 	"errors"
 	"fmt"
+	"net"
+	"net/url"
 	"os"
 	"strconv"
 	"strings"
@@ -18,6 +20,7 @@ type Config struct {
 	Database DatabaseConfig
 	JWT      JWTConfig
 	CORS     CORSConfig
+	Admin    AdminConfig
 }
 
 type AppConfig struct {
@@ -26,7 +29,24 @@ type AppConfig struct {
 }
 
 type DatabaseConfig struct {
-	URL string
+	Host     string
+	Port     int
+	User     string
+	Password string
+	Name     string
+	SSLMode  string
+}
+
+// URL builds the connection string, escaping credentials so passwords with
+// reserved characters such as @ or / stay valid.
+func (c DatabaseConfig) URL() string {
+	return (&url.URL{
+		Scheme:   "postgres",
+		User:     url.UserPassword(c.User, c.Password),
+		Host:     net.JoinHostPort(c.Host, strconv.Itoa(c.Port)),
+		Path:     "/" + c.Name,
+		RawQuery: url.Values{"sslmode": {c.SSLMode}}.Encode(),
+	}).String()
 }
 
 type JWTConfig struct {
@@ -36,6 +56,18 @@ type JWTConfig struct {
 
 type CORSConfig struct {
 	AllowedOrigins []string
+}
+
+// AdminConfig describes the administrator created on startup. It is optional:
+// without an email no account is created.
+type AdminConfig struct {
+	Name     string
+	Email    string
+	Password string
+}
+
+func (c AdminConfig) Enabled() bool {
+	return c.Email != ""
 }
 
 func Load() (Config, error) {
@@ -54,9 +86,18 @@ func Load() (Config, error) {
 		return Config{}, errors.New("JWT_SECRET is required")
 	}
 
-	databaseURL := strings.TrimSpace(os.Getenv("DATABASE_URL"))
-	if databaseURL == "" {
-		return Config{}, errors.New("DATABASE_URL is required")
+	database, err := loadDatabase()
+	if err != nil {
+		return Config{}, err
+	}
+
+	admin := AdminConfig{
+		Name:     envOrDefault("ADMIN_NAME", "Administrator"),
+		Email:    strings.TrimSpace(os.Getenv("ADMIN_EMAIL")),
+		Password: os.Getenv("ADMIN_PASSWORD"),
+	}
+	if (admin.Email == "") != (admin.Password == "") {
+		return Config{}, errors.New("ADMIN_EMAIL and ADMIN_PASSWORD must be set together")
 	}
 
 	return Config{
@@ -64,13 +105,39 @@ func Load() (Config, error) {
 			Environment: envOrDefault("APP_ENV", EnvironmentDevelopment),
 			Port:        port,
 		},
-		Database: DatabaseConfig{URL: databaseURL},
+		Database: database,
 		JWT: JWTConfig{
 			Secret: secret,
 			TTL:    ttl,
 		},
-		CORS: CORSConfig{AllowedOrigins: csvEnv("CORS_ALLOWED_ORIGINS", "http://localhost:5173")},
+		CORS:  CORSConfig{AllowedOrigins: csvEnv("CORS_ALLOWED_ORIGINS", "http://localhost:5173")},
+		Admin: admin,
 	}, nil
+}
+
+func loadDatabase() (DatabaseConfig, error) {
+	port, err := intEnv("POSTGRES_PORT", 5432)
+	if err != nil {
+		return DatabaseConfig{}, err
+	}
+	database := DatabaseConfig{
+		Host:     envOrDefault("POSTGRES_HOST", "localhost"),
+		Port:     port,
+		User:     strings.TrimSpace(os.Getenv("POSTGRES_USER")),
+		Password: os.Getenv("POSTGRES_PASSWORD"),
+		Name:     strings.TrimSpace(os.Getenv("POSTGRES_DB")),
+		SSLMode:  envOrDefault("POSTGRES_SSLMODE", "disable"),
+	}
+	for _, required := range []struct{ key, value string }{
+		{"POSTGRES_USER", database.User},
+		{"POSTGRES_PASSWORD", database.Password},
+		{"POSTGRES_DB", database.Name},
+	} {
+		if required.value == "" {
+			return DatabaseConfig{}, fmt.Errorf("%s is required", required.key)
+		}
+	}
+	return database, nil
 }
 
 func envOrDefault(key, fallback string) string {

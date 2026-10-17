@@ -1,5 +1,14 @@
 .PHONY: run test lint fmt hooks swagger migrate-up migrate-down seed docker-up docker-down
 
+# Load .env so make targets see the same settings as the API.
+-include .env
+export
+
+POSTGRES_HOST ?= localhost
+POSTGRES_PORT ?= 5432
+POSTGRES_SSLMODE ?= disable
+DATABASE_URL = postgres://$(POSTGRES_USER):$(POSTGRES_PASSWORD)@$(POSTGRES_HOST):$(POSTGRES_PORT)/$(POSTGRES_DB)?sslmode=$(POSTGRES_SSLMODE)
+
 run:
 	go run ./cmd/api
 

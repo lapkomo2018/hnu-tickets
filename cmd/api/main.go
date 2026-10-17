@@ -72,11 +72,18 @@ func run() error {
 
 	startupCtx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 	defer cancel()
-	pool, err := database.Open(startupCtx, cfg.Database.URL)
+	pool, err := database.Open(startupCtx, cfg.Database.URL())
 	if err != nil {
 		return err
 	}
 	defer pool.Close()
+
+	if cfg.Admin.Enabled() {
+		admin := auth.RegisterInput{Name: cfg.Admin.Name, Email: cfg.Admin.Email, Password: cfg.Admin.Password}
+		if err := auth.BootstrapAdmin(startupCtx, users.NewPostgresRepository(pool), admin); err != nil {
+			return err
+		}
+	}
 
 	router := newRouter(pool, cfg, specification(cfg))
 	server := &http.Server{
