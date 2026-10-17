@@ -1,4 +1,4 @@
-.PHONY: run test lint fmt hooks swagger migrate-up migrate-down seed docker-up docker-down
+.PHONY: run test lint fmt hooks swagger migrate-up migrate-down seed docker-up docker-down crypto-migrate crypto-rotate
 
 # Load .env so make targets see the same settings as the API.
 -include .env
@@ -44,3 +44,9 @@ docker-up:
 
 docker-down:
 	docker compose down
+
+crypto-migrate:
+	go run ./cmd/cryptodata -mode migrate
+
+crypto-rotate:
+	go run ./cmd/cryptodata -mode rotate

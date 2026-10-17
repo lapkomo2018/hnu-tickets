@@ -12,22 +12,29 @@ import (
 	"github.com/jackc/pgx/v5/pgxpool"
 
 	"hnu-tickets/internal/platform/database"
+	"hnu-tickets/internal/platform/fieldcrypt"
 )
 
 type PostgresRepository struct {
 	pool *pgxpool.Pool
+	keys *fieldcrypt.Keyring
 }
 
-func NewPostgresRepository(pool *pgxpool.Pool) *PostgresRepository {
-	return &PostgresRepository{pool: pool}
+func NewPostgresRepository(pool *pgxpool.Pool, keys *fieldcrypt.Keyring) *PostgresRepository {
+	return &PostgresRepository{pool: pool, keys: keys}
 }
 
 func (r *PostgresRepository) Create(ctx context.Context, ticket *Ticket) error {
-	err := database.Executor(ctx, r.pool).QueryRow(ctx, `
-		INSERT INTO tickets (title, description, status, priority, category_id, created_by, assigned_to)
-		VALUES ($1, $2, $3, $4, $5, $6, $7)
+	ticket.ID = uuid.New()
+	sealed, err := r.keys.Encrypt(ticket.Description, fieldcrypt.Context("tickets", ticket.ID.String(), "description"))
+	if err != nil {
+		return err
+	}
+	err = database.Executor(ctx, r.pool).QueryRow(ctx, `
+		INSERT INTO tickets (id, title, description, status, priority, category_id, created_by, assigned_to)
+		VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
 		RETURNING id, created_at, updated_at
-	`, ticket.Title, ticket.Description, ticket.Status, ticket.Priority, ticket.CategoryID, ticket.CreatedBy, ticket.AssignedTo).
+	`, ticket.ID, ticket.Title, sealed, ticket.Status, ticket.Priority, ticket.CategoryID, ticket.CreatedBy, ticket.AssignedTo).
 		Scan(&ticket.ID, &ticket.CreatedAt, &ticket.UpdatedAt)
 	if isForeignKeyViolation(err) {
 		return ErrInvalidCategory
@@ -39,15 +46,15 @@ func (r *PostgresRepository) Create(ctx context.Context, ticket *Ticket) error {
 }
 
 func (r *PostgresRepository) GetByID(ctx context.Context, id uuid.UUID) (*Ticket, error) {
-	return scanTicket(database.Executor(ctx, r.pool).QueryRow(ctx, ticketSelect+` WHERE id = $1`, id))
+	return r.scanTicket(database.Executor(ctx, r.pool).QueryRow(ctx, ticketSelect+` WHERE id = $1`, id))
 }
 
 func (r *PostgresRepository) GetByIDForUpdate(ctx context.Context, id uuid.UUID) (*Ticket, error) {
-	return scanTicket(database.Executor(ctx, r.pool).QueryRow(ctx, ticketSelect+` WHERE id = $1 FOR UPDATE`, id))
+	return r.scanTicket(database.Executor(ctx, r.pool).QueryRow(ctx, ticketSelect+` WHERE id = $1 FOR UPDATE`, id))
 }
 
 func (r *PostgresRepository) GetRecord(ctx context.Context, id uuid.UUID) (*Record, error) {
-	return scanRecord(database.Executor(ctx, r.pool).QueryRow(ctx, recordSelect+` WHERE t.id = $1`, id))
+	return r.scanRecord(database.Executor(ctx, r.pool).QueryRow(ctx, recordSelect+` WHERE t.id = $1`, id))
 }
 
 func (r *PostgresRepository) List(ctx context.Context, filter Filter) ([]Record, int64, error) {
@@ -88,7 +95,7 @@ func (r *PostgresRepository) List(ctx context.Context, filter Filter) ([]Record,
 
 	result := make([]Record, 0)
 	for rows.Next() {
-		record, err := scanRecord(rows)
+		record, err := r.scanRecord(rows)
 		if err != nil {
 			return nil, 0, err
 		}
@@ -101,13 +108,17 @@ func (r *PostgresRepository) List(ctx context.Context, filter Filter) ([]Record,
 }
 
 func (r *PostgresRepository) Update(ctx context.Context, ticket *Ticket) error {
+	sealed, err := r.keys.Encrypt(ticket.Description, fieldcrypt.Context("tickets", ticket.ID.String(), "description"))
+	if err != nil {
+		return err
+	}
 	command, err := database.Executor(ctx, r.pool).Exec(ctx, `
 		UPDATE tickets SET
 			title = $2, description = $3, status = $4, priority = $5,
 			category_id = $6, assigned_to = $7, updated_at = $8,
 			resolved_at = $9, closed_at = $10
 		WHERE id = $1
-	`, ticket.ID, ticket.Title, ticket.Description, ticket.Status, ticket.Priority,
+	`, ticket.ID, ticket.Title, sealed, ticket.Status, ticket.Priority,
 		ticket.CategoryID, ticket.AssignedTo, ticket.UpdatedAt, ticket.ResolvedAt, ticket.ClosedAt)
 	if isForeignKeyViolation(err) {
 		return ticketReferenceError(err)
@@ -139,7 +150,7 @@ type scanner interface {
 	Scan(...any) error
 }
 
-func scanTicket(row scanner) (*Ticket, error) {
+func (r *PostgresRepository) scanTicket(row scanner) (*Ticket, error) {
 	var ticket Ticket
 	err := row.Scan(
 		&ticket.ID, &ticket.Title, &ticket.Description, &ticket.Status, &ticket.Priority,
@@ -152,10 +163,14 @@ func scanTicket(row scanner) (*Ticket, error) {
 	if err != nil {
 		return nil, fmt.Errorf("scan ticket: %w", err)
 	}
+	ticket.Description, err = r.keys.Decrypt(ticket.Description, fieldcrypt.Context("tickets", ticket.ID.String(), "description"))
+	if err != nil {
+		return nil, err
+	}
 	return &ticket, nil
 }
 
-func scanRecord(row scanner) (*Record, error) {
+func (r *PostgresRepository) scanRecord(row scanner) (*Record, error) {
 	var record Record
 	err := row.Scan(
 		&record.ID, &record.Title, &record.Description, &record.Status, &record.Priority,
@@ -169,6 +184,10 @@ func scanRecord(row scanner) (*Record, error) {
 	}
 	if err != nil {
 		return nil, fmt.Errorf("scan ticket record: %w", err)
+	}
+	record.Description, err = r.keys.Decrypt(record.Description, fieldcrypt.Context("tickets", record.ID.String(), "description"))
+	if err != nil {
+		return nil, err
 	}
 	return &record, nil
 }

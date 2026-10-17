@@ -35,7 +35,7 @@ USER can access their own tickets, comments and history; SPECIALIST can access a
 
 Database, log and backup access is restricted to designated operators. Application administrators do not automatically receive direct database or backup access. Support records and credentials must not be committed to the public source repository.
 
-Transmit API data over HTTPS and use verified TLS for remote database connections. Encrypt off-host backups and protect encryption keys separately. Passwords are hashed rather than reversibly encrypted. Ticket text is stored as relational data; field-level encryption of ticket content is not implemented.
+Transmit API data over HTTPS and use verified TLS for remote database connections. Encrypt off-host backups and protect encryption keys separately. Passwords are hashed rather than reversibly encrypted. Ticket descriptions, comment content and history values use AES-256-GCM field encryption. Titles, names, email and operational metadata remain readable in the database. See [Cryptography](cryptography.md) for key separation, rotation and protection limits.
 
 The server has no documented automatic business-data transfer to third-party analytics or mail providers. Hosting operators may process stored data under the organization's deployment arrangement; the organization must identify actual providers and locations before operational use.
 

@@ -1,0 +1,32 @@
+{
+  "algorithm": "AES-256-CTR",
+  "alternative_plaintext": "2026_ІПЗс-24-1_Лапко_Максим_варіант:99_",
+  "attack_verified": true,
+  "caesar_ciphertext": "2026_ОЦМш-24-1_Тєцсх_Уєсшну_зєчоєфщ:07_",
+  "caesar_roundtrip": true,
+  "caesar_shift": 7,
+  "characters": 39,
+  "ciphertext_1_hex": "e9ddeb87c24fc1cf1dbe6fe10d490938b8261a3edf6012a2be74eff6343e54a258972c58f341dcd852d7449b91173c626594e25ae8426ae9bf655937f4",
+  "ciphertext_2_hex": "e9ddeb87c24fc1cf1dbe6fe10d490938b8261a3edf6012a2be74eff6343e54a258972c58f341dcd852d7449b91173c626594e25ae8426ae9bf655039f4",
+  "counter": "128-bit big-endian counter initialized to IV, incremented per block",
+  "created_utc": "2026-10-17T20:42:45Z",
+  "decrypted_ciphertext_2": "2026_ІПЗс-24-1_Лапко_Максим_варіант:99_",
+  "gamma_1_hex": "dbedd9b19d9f471f826ef8308c643b0c951745ee44b0a27201a455268a61843e8827fce222c00c60826b1b4b23c78cb3e545748a5892d7383d5f6900ab",
+  "iv_1_hex": "9ace5ef075221491ce494349492187df",
+  "key_1_hex": "558264950cae0326863ed57ed0367420034a7e34e496ba5ef0ebb9376ba747fc",
+  "padding": "none",
+  "plaintext": "2026_ІПЗс-24-1_Лапко_Максим_варіант:07_",
+  "transposition_ciphertext": "2-акр72З_Мв:П1__т0сЛаа0_4киа62псі_І-омн",
+  "transposition_columns_zero_based": [
+    2,
+    0,
+    6,
+    1,
+    4,
+    3,
+    5
+  ],
+  "transposition_roundtrip": true,
+  "utf8_bytes": 61,
+  "utf8_hex": "323032365fd086d09fd097d1812d32342d315fd09bd0b0d0bfd0bad0be5fd09cd0b0d0bad181d0b8d0bc5fd0b2d0b0d180d196d0b0d0bdd1823a30375f"
+}
