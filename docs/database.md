@@ -55,3 +55,10 @@ erDiagram
 Indexes cover ticket status, priority, category, creator, assignee, creation time, and the ticket foreign keys used by comments and history.
 
 Deleting a category referenced by a ticket returns a conflict. Tickets are never physically deleted through the API; cancellation is a status transition. Comments and history use cascading foreign keys only to preserve database consistency if a ticket is removed administratively outside the API.
+
+## Protection boundaries
+
+The schema constrains allowed status/role/priority values but does not enforce the complete lifecycle or require an assignee for ASSIGNED. Those are application invariants; the generic status-route gap is tracked as G-02 in [Security](security.md#implementation-gaps).
+
+History has no API update/delete operation, but it is an ordinary database table. Cascading deletion and privileged SQL access mean it is not a tamper-proof ledger. Runtime/migration privilege separation and verified backup restoration remain required deployment work (G-04/G-08).
+

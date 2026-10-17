@@ -1,6 +1,12 @@
 # HNU Tickets
 
-HNU Tickets is a REST API for managing technical support requests. It supports role-based ticket visibility, specialist assignment, a controlled ticket lifecycle, comments, an immutable audit trail, and administrative analytics.
+HNU Tickets is a REST API for managing technical support requests. It supports role-based ticket visibility, specialist assignment, a controlled ticket lifecycle, comments, an API-level append-only audit trail, and administrative analytics.
+
+## Documentation
+
+Start with the [documentation index](docs/README.md). It includes the [system specification](docs/specification.md), [project policy](docs/project_policy.md), [business logic](docs/business_logic.md), and [security requirements and implementation gaps](docs/security.md), prepared for Data and Information Security laboratory No. 1 using the existing Software Construction project.
+
+The specification preserves FR-01–FR-12. Intended requirements and source-observed implementation gaps are documented separately; this baseline does not claim production readiness or completed runtime acceptance.
 
 ## Architecture
 
@@ -155,3 +161,4 @@ With `APP_ENV=development` the server runs that same generator on startup and se
 document, so annotations only need a restart to show up in the Swagger UI. The generator reads Go
 sources, which the container image does not ship: any other environment serves the specification
 compiled into the binary.
+
