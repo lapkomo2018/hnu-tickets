@@ -21,3 +21,6 @@ HNU Tickets is the server part of the **Technical Support Ticket Management Info
 Functional requirements retain FR-01–FR-12 across the specification and business rules. Security requirements use SEC-R identifiers, threats use TM identifiers and verification scenarios use SEC identifiers. Keep these links consistent when behavior changes.
 
 Policies specify required controls. Implementation gaps identify where additional work is needed; acceptance scenarios define how to verify it.
+
+- [Integrity and distribution](integrity_distribution.md): authenticated releases, hosted access and obfuscation experiments.
+
