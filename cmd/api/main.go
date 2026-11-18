@@ -57,7 +57,7 @@ import (
 // @tag.description Administrative ticket metrics
 func main() {
 	if err := run(); err != nil {
-		slog.Error("application stopped", "error", err)
+		slog.Error("application stopped", "error_type", fmt.Sprintf("%T", err))
 		os.Exit(1)
 	}
 }
@@ -128,7 +128,7 @@ func specification(cfg config.Config) string {
 	}
 	generated, err := apidocs.Generate()
 	if err != nil {
-		slog.Warn("serving the embedded API specification", "error", err)
+		slog.Warn("serving the embedded API specification", "error_type", fmt.Sprintf("%T", err))
 		return docs.SwaggerInfo.ReadDoc()
 	}
 	slog.Info("API specification regenerated from source")

@@ -1,0 +1,224 @@
+[
+  {
+    "method": "GET",
+    "path": "/",
+    "status": 200,
+    "body": {
+      "service": "Educational Library REST API",
+      "version": "1.0",
+      "public_routes": [
+        "GET /",
+        "GET /doc",
+        "GET /coffee_maker",
+        "POST /auth/token"
+      ],
+      "protected_routes": [
+        "GET /whoami",
+        "GET /api/books",
+        "GET /api/books/{id}",
+        "GET /api/loans",
+        "GET /api/summary"
+      ]
+    }
+  },
+  {
+    "method": "GET",
+    "path": "/doc",
+    "status": 200,
+    "body": {
+      "html_document": 2546
+    }
+  },
+  {
+    "method": "GET",
+    "path": "/coffee_maker",
+    "status": 418,
+    "body": {
+      "error": "im_a_teapot",
+      "message": "I'm a teapot"
+    }
+  },
+  {
+    "method": "GET",
+    "path": "/auth/token",
+    "status": 405,
+    "body": {
+      "error": "method_not_allowed",
+      "message": "Use POST /auth/token"
+    }
+  },
+  {
+    "method": "GET",
+    "path": "/whoami",
+    "status": 401,
+    "body": {
+      "error": "unauthorized",
+      "message": "Bearer token required"
+    }
+  },
+  {
+    "method": "POST",
+    "path": "/auth/token",
+    "status": 401,
+    "body": {
+      "error": "invalid_client",
+      "message": "Invalid client_id or client_secret"
+    }
+  },
+  {
+    "method": "POST",
+    "path": "/auth/token",
+    "status": 200,
+    "body": {
+      "token_type": "Bearer",
+      "expires_in": 1800,
+      "variant": 7,
+      "watermark": "LAB6-V07-R007",
+      "access_token": "[omitted]"
+    }
+  },
+  {
+    "method": "GET",
+    "path": "/whoami",
+    "status": 200,
+    "body": {
+      "variant": 7,
+      "client_id": "peony-07",
+      "reader_id": "R-007",
+      "reader_name": "Reader Variant 07",
+      "library_card": "LIB-2026-007",
+      "watermark": "LAB6-V07-R007"
+    }
+  },
+  {
+    "method": "GET",
+    "path": "/api/books",
+    "status": 200,
+    "body": {
+      "variant": 7,
+      "watermark": "LAB6-V07-R007",
+      "count": 6,
+      "books": [
+        {
+          "id": "BK-07-01",
+          "catalog_no": "CAT-0037",
+          "title": "Code Complete",
+          "author": "Steve McConnell",
+          "year": 2004,
+          "available": true,
+          "owner_variant": 7,
+          "watermark": "LAB6-V07-R007"
+        },
+        {
+          "id": "BK-07-02",
+          "catalog_no": "CAT-0038",
+          "title": "Cryptography Engineering",
+          "author": "Niels Ferguson, Bruce Schneier, Tadayoshi Kohno",
+          "year": 2010,
+          "available": false,
+          "owner_variant": 7,
+          "watermark": "LAB6-V07-R007"
+        },
+        {
+          "id": "BK-07-03",
+          "catalog_no": "CAT-0039",
+          "title": "Operating System Concepts",
+          "author": "Abraham Silberschatz et al.",
+          "year": 2018,
+          "available": true,
+          "owner_variant": 7,
+          "watermark": "LAB6-V07-R007"
+        },
+        {
+          "id": "BK-07-04",
+          "catalog_no": "CAT-0040",
+          "title": "Building Secure and Reliable Systems",
+          "author": "Heather Adkins et al.",
+          "year": 2020,
+          "available": true,
+          "owner_variant": 7,
+          "watermark": "LAB6-V07-R007"
+        },
+        {
+          "id": "BK-07-05",
+          "catalog_no": "CAT-0041",
+          "title": "The Pragmatic Programmer",
+          "author": "Andrew Hunt, David Thomas",
+          "year": 2019,
+          "available": false,
+          "owner_variant": 7,
+          "watermark": "LAB6-V07-R007"
+        },
+        {
+          "id": "BK-07-06",
+          "catalog_no": "CAT-0042",
+          "title": "Computer Networks",
+          "author": "Andrew S. Tanenbaum, David J. Wetherall",
+          "year": 2021,
+          "available": true,
+          "owner_variant": 7,
+          "watermark": "LAB6-V07-R007"
+        }
+      ]
+    }
+  },
+  {
+    "method": "GET",
+    "path": "/api/books/BK-07-01",
+    "status": 200,
+    "body": {
+      "id": "BK-07-01",
+      "catalog_no": "CAT-0037",
+      "title": "Code Complete",
+      "author": "Steve McConnell",
+      "year": 2004,
+      "available": true,
+      "owner_variant": 7,
+      "watermark": "LAB6-V07-R007"
+    }
+  },
+  {
+    "method": "GET",
+    "path": "/api/loans",
+    "status": 200,
+    "body": {
+      "variant": 7,
+      "watermark": "LAB6-V07-R007",
+      "count": 2,
+      "loans": [
+        {
+          "loan_id": "LN-07-01",
+          "book_id": "BK-07-02",
+          "title": "Cryptography Engineering",
+          "issued_at": "2026-08-22",
+          "due_at": "2026-09-22",
+          "status": "active",
+          "owner_variant": 7,
+          "watermark": "LAB6-V07-R007"
+        },
+        {
+          "loan_id": "LN-07-02",
+          "book_id": "BK-07-05",
+          "title": "The Pragmatic Programmer",
+          "issued_at": "2026-09-03",
+          "due_at": "2026-10-03",
+          "status": "active",
+          "owner_variant": 7,
+          "watermark": "LAB6-V07-R007"
+        }
+      ]
+    }
+  },
+  {
+    "method": "GET",
+    "path": "/api/summary",
+    "status": 200,
+    "body": {
+      "variant": 7,
+      "total_books": 6,
+      "available_books": 4,
+      "active_loans": 2,
+      "watermark": "LAB6-V07-R007"
+    }
+  }
+]

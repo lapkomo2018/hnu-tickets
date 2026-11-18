@@ -1,0 +1,14 @@
+{
+  "backup": {
+    "bytes": 20132,
+    "sha256": "fdaeb2a5f6cbf7f602e4a05947e739a8f0962daffde4f371c8767ab5c1db0400"
+  },
+  "tampered_copy_rejected": true,
+  "source_database_dropped": true,
+  "restored_database": "drill_restored",
+  "ticket_equal": true,
+  "login_after_restore": true,
+  "ready_after_restore": true,
+  "recovery_seconds": 0.57,
+  "secrets_absent_from_log": true
+}

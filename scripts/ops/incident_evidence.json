@@ -1,0 +1,11 @@
+{
+  "app": {
+    "sha256": "12bbc642f012da1ebee37a32da1e058bd17179fda72398f928553df5ce1eca81",
+    "lines": 34
+  },
+  "access": {
+    "sha256": "e2fb557d87767124ddbf76903ce65b40c53aded0a869e2d90bc6382bb8508489",
+    "lines": 115
+  },
+  "login_401_from_suspicious_ip": 20
+}

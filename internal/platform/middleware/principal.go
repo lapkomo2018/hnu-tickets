@@ -19,6 +19,7 @@ type Principal struct {
 type principalKey struct{}
 
 func WithPrincipal(r *http.Request, principal Principal) *http.Request {
+	SetAuditActor(r, principal.UserID.String(), principal.Role)
 	ctx := context.WithValue(r.Context(), principalKey{}, principal)
 	return r.WithContext(ctx)
 }

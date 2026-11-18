@@ -1,46 +1,70 @@
 package middleware
 
 import (
+	"context"
 	"log/slog"
+	"net"
 	"net/http"
-	"strings"
 	"time"
 	"uuid"
+
+	"github.com/go-chi/chi/v5"
+	chimiddleware "github.com/go-chi/chi/v5/middleware"
 )
 
 func RequestID(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		requestID := strings.TrimSpace(r.Header.Get("X-Request-ID"))
-		if requestID == "" {
-			requestID = uuid.New().String()
-		}
+		requestID := uuid.New().String()
 		w.Header().Set("X-Request-ID", requestID)
 		next.ServeHTTP(w, r)
 	})
 }
 
-type responseRecorder struct {
-	http.ResponseWriter
-	status int
-}
+type auditKey struct{}
+type auditActor struct{ ID, Role string }
 
-func (r *responseRecorder) WriteHeader(status int) {
-	r.status = status
-	r.ResponseWriter.WriteHeader(status)
+// SetAuditActor records an identity only after authentication.
+func SetAuditActor(r *http.Request, id, role string) {
+	if actor, ok := r.Context().Value(auditKey{}).(*auditActor); ok {
+		actor.ID, actor.Role = id, role
+	}
 }
-
 func RequestLogger(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		started := time.Now()
-		recorder := &responseRecorder{ResponseWriter: w, status: http.StatusOK}
+		actor := &auditActor{ID: "anonymous"}
+		r = r.WithContext(context.WithValue(r.Context(), auditKey{}, actor))
+		recorder := chimiddleware.NewWrapResponseWriter(w, r.ProtoMajor)
 		next.ServeHTTP(recorder, r)
-		slog.InfoContext(r.Context(), "http request",
-			"request_id", recorder.Header().Get("X-Request-ID"),
-			"method", r.Method,
-			"path", r.URL.Path,
-			"status", recorder.status,
-			"duration", time.Since(started),
-		)
+		status := recorder.Status()
+		if status == 0 {
+			status = http.StatusOK
+		}
+		route, object := "unmatched", ""
+		if ctx := chi.RouteContext(r.Context()); ctx != nil {
+			if ctx.RoutePattern() != "" {
+				route = ctx.RoutePattern()
+			}
+			for _, value := range ctx.URLParams.Values {
+				if id, err := uuid.Parse(value); err == nil {
+					object = id.String()
+					break
+				}
+			}
+		}
+		peer, _, err := net.SplitHostPort(r.RemoteAddr)
+		if err != nil {
+			peer = "unknown"
+		}
+		level := slog.LevelInfo
+		if status >= 500 {
+			level = slog.LevelError
+		} else if status >= 400 {
+			level = slog.LevelWarn
+		}
+		slog.Log(r.Context(), level, "http.operation", "request_id", recorder.Header().Get("X-Request-ID"),
+			"actor_id", actor.ID, "role", actor.Role, "method", r.Method, "route", route, "object_id", object,
+			"peer", peer, "status", status, "bytes", recorder.BytesWritten(), "duration_ms", time.Since(started).Milliseconds())
 	})
 }
 
