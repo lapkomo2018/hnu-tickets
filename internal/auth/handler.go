@@ -34,6 +34,7 @@ func (h *Handler) Register(w http.ResponseWriter, r *http.Request) error {
 	if err != nil {
 		return err
 	}
+	appmiddleware.SetAuditActor(r, session.User.ID.String(), string(session.User.Role))
 	httpx.JSON(w, http.StatusCreated, toSessionResponse(session))
 	return nil
 }
@@ -55,6 +56,7 @@ func (h *Handler) Login(w http.ResponseWriter, r *http.Request) error {
 	if err != nil {
 		return err
 	}
+	appmiddleware.SetAuditActor(r, session.User.ID.String(), string(session.User.Role))
 	httpx.JSON(w, http.StatusOK, toSessionResponse(session))
 	return nil
 }

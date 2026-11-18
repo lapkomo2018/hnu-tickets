@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"log/slog"
 	"net/http"
-	"runtime/debug"
 )
 
 type Code string
@@ -110,8 +109,7 @@ func (m *ErrorMiddleware) Recoverer(next http.Handler) http.Handler {
 			if recovered := recover(); recovered != nil {
 				m.logger.ErrorContext(r.Context(), "panic recovered",
 					"request_id", w.Header().Get("X-Request-ID"),
-					"panic", recovered,
-					"stack", string(debug.Stack()),
+					"event", "panic",
 				)
 				m.writeResponse(w, http.StatusInternalServerError, CodeInternalError, "an unexpected error occurred")
 			}
@@ -134,7 +132,7 @@ func (m *ErrorMiddleware) Write(w http.ResponseWriter, r *http.Request, err erro
 		m.logger.ErrorContext(r.Context(), "request failed",
 			"request_id", w.Header().Get("X-Request-ID"),
 			"code", code,
-			"error", err,
+			"error_type", fmt.Sprintf("%T", err),
 		)
 	}
 	m.writeResponse(w, status, code, message)

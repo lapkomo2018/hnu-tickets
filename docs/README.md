@@ -24,3 +24,7 @@ Policies specify required controls. Implementation gaps identify where additiona
 
 - [Integrity and distribution](integrity_distribution.md): authenticated releases, hosted access and obfuscation experiments.
 
+
+- [Client–server trust](client_server.md)
+- [Libraxis incident](incident_libraxis.md)
+- [Logging, monitoring and recovery](operations.md)
